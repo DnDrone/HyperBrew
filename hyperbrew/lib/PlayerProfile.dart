@@ -76,7 +76,7 @@ class _PlayerProfileState extends State<PlayerProfile> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF4d346b),
+      backgroundColor: const Color(0xFF2A2A31),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -95,8 +95,8 @@ class _PlayerProfileState extends State<PlayerProfile> {
               onPressed: _salvarDados,
               child: const Text("Salvar"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF4d346b),
+                backgroundColor: const Color(0xFF6F7684),
+                foregroundColor: Colors.white,
               ),
             )
           ],
@@ -128,52 +128,62 @@ class _PlayerProfileState extends State<PlayerProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF5D3A9B),
+      backgroundColor: const Color(0xFFEAF8FF),
       appBar: AppBar(
-        title: const Text("Perfil do Jogador", style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF4d346b),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "Perfil do Jogador",
+          style: TextStyle(
+            color: Color(0xFFFF3A3A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: const Color(0xFF2A2A31),
+        iconTheme: const IconThemeData(color: Color(0xFFEAF8FF)),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(3.0),
+          child: Divider(
+            color: Color(0xFFFF3A3A),
+            thickness: 3,
+            height: 3,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Avatar
             GestureDetector(
               onTap: _selecionarAvatar,
               child: CircleAvatar(
-                backgroundImage: avatarPath != null ? FileImage(File(avatarPath!)) : const AssetImage('images/avatar.jpg') as ImageProvider,
+                backgroundImage: avatarPath != null
+                    ? FileImage(File(avatarPath!))
+                    : const AssetImage('images/avatar.jpg') as ImageProvider,
                 radius: 60,
               ),
             ),
             const SizedBox(height: 20),
-
-            // Nome e nickname
             Text(
               nome,
               style: const TextStyle(
                 fontSize: 24,
-                color: Colors.white,
+                color: Color(0xFF2A2A31),
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text("@$nickname", style: const TextStyle(color: Colors.white70)),
-
+            Text("@$nickname", style: const TextStyle(color: Color(0xFF6F7684))),
             const SizedBox(height: 20),
-            const Divider(color: Colors.white30),
-
+            const Divider(color: Color(0xFF6F7684)),
             _infoItem("Sistema favorito", sistema),
             _infoItem("Fichas criadas", "$totalFichas"),
             _infoItem("Classe mais usada", "Guerreiro"),
-
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: _abrirEditor,
               icon: const Icon(Icons.edit),
               label: const Text("Editar Perfil"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF4d346b),
+                backgroundColor: const Color(0xFF6F7684),
+                foregroundColor: Colors.white,
               ),
             )
           ],
@@ -188,8 +198,8 @@ class _PlayerProfileState extends State<PlayerProfile> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
-          Text(value, style: const TextStyle(color: Colors.white70, fontSize: 16)),
+          Text(label, style: const TextStyle(color: Color(0xFF2A2A31), fontSize: 16)),
+          Text(value, style: const TextStyle(color: Color(0xFF6F7684), fontSize: 16)),
         ],
       ),
     );

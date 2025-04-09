@@ -32,13 +32,9 @@ class _DiceRollerState extends State<DiceRoller> with SingleTickerProviderStateM
 
   void _rollDice(String dice) {
     setState(() => _currentDice = dice);
-
     int sides = int.parse(dice.substring(1));
-
-    // 🔊 Toca som imediatamente ao clicar
     _audioPlayer.play(AssetSource('sounds/dice_roll.mp3'));
 
-    // 🔄 Roda a animação
     _controller.forward(from: 0).then((_) {
       setState(() {
         _result = _random.nextInt(sides) + 1;
@@ -58,8 +54,8 @@ class _DiceRollerState extends State<DiceRoller> with SingleTickerProviderStateM
       onPressed: () => _rollDice(label),
       child: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF4d346b),
+        backgroundColor: const Color(0xFF6F7684),
+        foregroundColor: Colors.white,
         shape: const CircleBorder(),
         padding: const EdgeInsets.all(20),
       ),
@@ -69,11 +65,25 @@ class _DiceRollerState extends State<DiceRoller> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF5D3A9B),
+      backgroundColor: const Color(0xFFEAF8FF),
       appBar: AppBar(
-        title: const Text("Rolador de Dados", style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF4d346b),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: const Color(0xFF2A2A31),
+        iconTheme: const IconThemeData(color: Color(0xFFEAF8FF)),
+        title: const Text(
+          "Rolador de Dados",
+          style: TextStyle(
+            color: Color(0xFFFF3A3A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(3.0),
+          child: Divider(
+            color: Color(0xFFFF3A3A),
+            thickness: 3,
+            height: 3,
+          ),
+        ),
       ),
       body: Center(
         child: Column(
@@ -81,7 +91,7 @@ class _DiceRollerState extends State<DiceRoller> with SingleTickerProviderStateM
           children: [
             const Text(
               "Último resultado",
-              style: TextStyle(color: Colors.white70, fontSize: 16),
+              style: TextStyle(color: Colors.black87, fontSize: 16),
             ),
             const SizedBox(height: 10),
             AnimatedBuilder(
@@ -93,7 +103,7 @@ class _DiceRollerState extends State<DiceRoller> with SingleTickerProviderStateM
                     _result > 0 ? '$_result' : '-',
                     style: const TextStyle(
                       fontSize: 60,
-                      color: Colors.white,
+                      color: Color(0xFF2A2A31),
                       fontWeight: FontWeight.bold,
                     ),
                   ),

@@ -1,3 +1,4 @@
+// lib/NotesFichaPage.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,7 +45,7 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF4d346b),
+      backgroundColor: const Color(0xFF2A2A31),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -79,8 +80,8 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
               },
               child: const Text("Salvar"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF4d346b),
+                backgroundColor: const Color(0xFF6F7684),
+                foregroundColor: Colors.white,
               ),
             )
           ],
@@ -118,27 +119,41 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF5D3A9B),
+      backgroundColor: const Color(0xFFEAF8FF),
       appBar: AppBar(
-        title: Text("Notas: ${widget.ficha["nome"]}", style: const TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF4d346b),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: const Color(0xFF2A2A31),
+        iconTheme: const IconThemeData(color: Color(0xFFEAF8FF)),
+        title: Text(
+          "Notas: ${widget.ficha["nome"]}",
+          style: const TextStyle(
+            color: Color(0xFFFF3A3A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(3),
+          child: Divider(
+            color: Color(0xFFFF3A3A),
+            thickness: 3,
+            height: 3,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
+            icon: const Icon(Icons.add, color: Color(0xFFEAF8FF)),
             onPressed: () => _abrirEditor(),
-          )
+          ),
         ],
       ),
       body: _notas.isEmpty
-          ? const Center(child: Text("Sem notas ainda.", style: TextStyle(color: Colors.white70)))
+          ? const Center(child: Text("Sem notas ainda.", style: TextStyle(color: Color(0xFF2A2A31))))
           : ListView.builder(
               itemCount: _notas.length,
               padding: const EdgeInsets.all(16),
               itemBuilder: (context, i) {
                 final nota = _notas[i];
                 return Card(
-                  color: const Color(0xFF4d346b),
+                  color: const Color(0xFF2A2A31),
                   margin: const EdgeInsets.only(bottom: 16),
                   child: ListTile(
                     title: Text(nota["titulo"], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),

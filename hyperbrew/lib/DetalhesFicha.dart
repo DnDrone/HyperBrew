@@ -1,3 +1,4 @@
+// lib/DetalhesFicha.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 
@@ -15,39 +16,46 @@ class DetalhesFicha extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(nome),
-        backgroundColor: const Color(0xFF4d346b),
+        backgroundColor: const Color(0xFF2A2A31),
+        iconTheme: const IconThemeData(color: Color(0xFFEAF8FF)),
+        title: Text(
+          nome,
+          style: const TextStyle(
+            color: Color(0xFFFF3A3A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(3),
+          child: Divider(
+            color: Color(0xFFFF3A3A),
+            thickness: 3,
+            height: 3,
+          ),
+        ),
       ),
       body: Container(
-        color: const Color(0xFF5D3A9B),
+        color: const Color(0xFFEAF8FF),
         padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
-            // Imagem
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: imagemValida
                     ? Image.file(File(imagemPath), height: 150, fit: BoxFit.cover)
-                    : const Icon(Icons.person, size: 150, color: Colors.white),
+                    : const Icon(Icons.person, size: 150, color: Color(0xFF2A2A31)),
               ),
             ),
             const SizedBox(height: 20),
-
-            // Descrição geral
             Text(
               descricao,
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-              ),
+              style: const TextStyle(fontSize: 18, color: Color(0xFF2A2A31)),
             ),
-
             const SizedBox(height: 20),
-            const Divider(color: Colors.white70),
-
+            const Divider(color: Color(0xFF6F7684)),
             const Text("Status",
-                style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 20, color: Color(0xFF2A2A31), fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             _buildStatus("Força", ficha["forca"]),
             _buildStatus("Destreza", ficha["destreza"]),
@@ -55,12 +63,10 @@ class DetalhesFicha extends StatelessWidget {
             _buildStatus("Inteligência", ficha["inteligencia"]),
             _buildStatus("Sabedoria", ficha["sabedoria"]),
             _buildStatus("Carisma", ficha["carisma"]),
-
-            const Divider(color: Colors.white70),
+            const Divider(color: Color(0xFF6F7684)),
             const SizedBox(height: 10),
-
             const Text("Equipamentos",
-                style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 20, color: Color(0xFF2A2A31), fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             ..._buildEquipamentos(),
           ],
@@ -76,8 +82,8 @@ class DetalhesFicha extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(nome, style: const TextStyle(color: Colors.white)),
-          Text(numero.toString(), style: const TextStyle(color: Colors.white)),
+          Text(nome, style: const TextStyle(color: Color(0xFF2A2A31))),
+          Text(numero.toString(), style: const TextStyle(color: Color(0xFF2A2A31))),
         ],
       ),
     );
@@ -87,10 +93,10 @@ class DetalhesFicha extends StatelessWidget {
     if (ficha["equipamentos"] is List) {
       final equipamentos = ficha["equipamentos"] as List;
       return equipamentos
-          .map<Widget>((item) => Text("- ${item.toString()}", style: const TextStyle(color: Colors.white)))
+          .map<Widget>((item) => Text("- ${item.toString()}", style: const TextStyle(color: Color(0xFF2A2A31))))
           .toList();
     } else {
-      return [const Text("Nenhum equipamento", style: TextStyle(color: Colors.white))];
+      return [const Text("Nenhum equipamento", style: TextStyle(color: Color(0xFF2A2A31)))];
     }
   }
 }

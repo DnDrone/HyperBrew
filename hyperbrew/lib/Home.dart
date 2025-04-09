@@ -1,15 +1,16 @@
+// coloque hyperbrew na topbar e uma linha vermelha de divisoria
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
 import 'CreateFicha.dart';
 import 'DetalhesFicha.dart';
 import 'PlayerProfile.dart';
 import 'NotesPage.dart';
 import 'SettingsPage.dart';
+import 'DiceRoller.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -20,7 +21,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<Map<String, dynamic>> _fichas = [];
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
 
   @override
   void initState() {
@@ -48,15 +49,15 @@ class _HomeState extends State<Home> {
   }
 
   void _editarFichaModal(Map<String, dynamic> ficha, int index) {
-    final nomeCtrl = TextEditingController(text: ficha["nome"]?.toString() ?? '');
-    final classeCtrl = TextEditingController(text: ficha["classe"]?.toString() ?? '');
-    final racaCtrl = TextEditingController(text: ficha["raca"]?.toString() ?? '');
+    final nomeCtrl = TextEditingController(text: ficha["nome"] ?? '');
+    final classeCtrl = TextEditingController(text: ficha["classe"] ?? '');
+    final racaCtrl = TextEditingController(text: ficha["raca"] ?? '');
     String? novaImagem = ficha["imagem"]?.toString();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF4d346b),
+      backgroundColor: const Color(0xFF2A2A31),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -101,8 +102,8 @@ class _HomeState extends State<Home> {
                 },
                 child: const Text("Salvar"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF4d346b),
+                  backgroundColor: const Color(0xFF6F7684),
+                  foregroundColor: Colors.white,
                 ),
               )
             ],
@@ -132,130 +133,132 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _fichasPage() {
-    return Scaffold(
-      backgroundColor: const Color(0xFF5D3A9B),
-      body: _fichas.isEmpty
-          ? const Center(child: Text("Nenhuma ficha criada ainda.", style: TextStyle(color: Colors.white70)))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _fichas.length,
-              itemBuilder: (context, i) {
-                final ficha = _fichas[i];
-                final imagemPath = ficha["imagem"]?.toString();
-                final temImagemValida = imagemPath != null && File(imagemPath).existsSync();
-
-                return Card(
-                  color: const Color(0xFF4d346b),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: temImagemValida
-                          ? FileImage(File(imagemPath))
-                          : const AssetImage('images/avatar.jpg') as ImageProvider,
-                    ),
-                    title: Text(
-                      ficha["nome"]?.toString() ?? "Sem nome",
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      "${ficha["classe"]?.toString() ?? "Classe indefinida"} - ${ficha["raca"]?.toString() ?? "Raça indefinida"}",
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                    trailing: PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert, color: Colors.white),
-                      onSelected: (value) async {
-                        if (value == 'editar') {
-                          _editarFichaModal(ficha, i);
-                        } else if (value == 'ver') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => DetalhesFicha(
-                                ficha: {
-                                  "nome": (ficha["nome"] ?? "Sem nome").toString(),
-                                  "descricao":
-                                      "${(ficha["classe"] ?? "Classe indefinida").toString()} - ${(ficha["raca"] ?? "Raça indefinida").toString()}",
-                                  "imagem": (ficha["imagem"] ?? "").toString(),
-                                  "forca": int.tryParse(ficha["forca"]?.toString() ?? "") ?? 10,
-                                  "destreza": int.tryParse(ficha["destreza"]?.toString() ?? "") ?? 10,
-                                  "constituicao": int.tryParse(ficha["constituicao"]?.toString() ?? "") ?? 10,
-                                  "inteligencia": int.tryParse(ficha["inteligencia"]?.toString() ?? "") ?? 10,
-                                  "sabedoria": int.tryParse(ficha["sabedoria"]?.toString() ?? "") ?? 10,
-                                  "carisma": int.tryParse(ficha["carisma"]?.toString() ?? "") ?? 10,
-                                  "equipamentos": (ficha["equipamentos"] is List)
-                                      ? ficha["equipamentos"]
-                                      : ['Espada curta', 'Armadura de couro'],
-                                },
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(value: 'ver', child: Text("Visualizar")),
-                        const PopupMenuItem(value: 'editar', child: Text("Editar")),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF4d346b),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const CreateFicha()),
-          ).then((_) => _carregarFichas());
-        },
-        child: const Icon(Icons.add),
+  PreferredSizeWidget? _buildAppBar() {
+    if (_selectedIndex != 2) return null;
+    return AppBar(
+      title: const Text(
+        'Hyperbrew',
+        style: TextStyle(color: Color(0xFFFF3A3A), fontWeight: FontWeight.bold),
       ),
+      backgroundColor: const Color(0xFF2A2A31),
+      iconTheme: const IconThemeData(color: Color(0xFFEAF8FF)),
+      bottom: const PreferredSize(
+        preferredSize: Size.fromHeight(3.0),
+        child: Divider(
+          color: Color(0xFFFF3A3A),
+          thickness: 3,
+          height: 3,
+        ),
+      ),
+      actions: [
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert, color: Color(0xFFEAF8FF)),
+          onSelected: (value) {
+            if (value == 'perfil') setState(() => _selectedIndex = 0);
+            if (value == 'config') setState(() => _selectedIndex = 4);
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(value: 'perfil', child: Text("Perfil do Jogador")),
+            const PopupMenuItem(value: 'config', child: Text("Configurações")),
+          ],
+        )
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
-      _fichasPage(),
       const PlayerProfile(),
       const NotesPage(),
+      _buildFichasView(),
+      const DiceRoller(),
       const SettingsPage(),
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF5D3A9B),
-      appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: const Color(0xFF4d346b),
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Image.asset('images/logo.jpeg', height: 80),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      backgroundColor: const Color(0xFFEAF8FF),
+      appBar: _buildAppBar(),
       body: _pages[_selectedIndex],
-      bottomNavigationBar: CurvedNavigationBar(
-        index: _selectedIndex,
-        items: const <Widget>[
-          Icon(Icons.folder_shared, size: 30),
-          Icon(Icons.person, size: 30),
-          Icon(Icons.note, size: 30),
-          Icon(Icons.settings, size: 30),
-        ],
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-            if (index == 0) _carregarFichas();
-          });
-        },
-        color: const Color(0xFF4d346b),
-        backgroundColor: const Color(0xFF5D3A9B),
-        buttonBackgroundColor: Colors.white,
-        animationCurve: Curves.easeInOut,
-        animationDuration: const Duration(milliseconds: 300),
+      bottomNavigationBar: BottomAppBar(
+        color: const Color(0xFF2A2A31),
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.note, color: Color(0xFF6F7684)),
+              onPressed: () => setState(() => _selectedIndex = 1),
+            ),
+            const SizedBox(width: 40),
+            IconButton(
+              icon: const Icon(Icons.casino, color: Color(0xFF6F7684)),
+              onPressed: () => setState(() => _selectedIndex = 3),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFFF3A3A),
+        foregroundColor: const Color(0xFFEAF8FF),
+        onPressed: () => setState(() => _selectedIndex = 2),
+        child: const Icon(Icons.play_arrow),
       ),
     );
+  }
+
+  Widget _buildFichasView() {
+    return _fichas.isEmpty
+        ? const Center(child: Text("Nenhuma ficha criada ainda.", style: TextStyle(color: Colors.black54)))
+        : ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: _fichas.length,
+            itemBuilder: (context, i) {
+              final ficha = _fichas[i];
+              final imagemPath = ficha["imagem"];
+              final temImagemValida = imagemPath != null && File(imagemPath).existsSync();
+
+              return Card(
+                color: const Color(0xFF2A2A31),
+                margin: const EdgeInsets.only(bottom: 16),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage: temImagemValida
+                        ? FileImage(File(imagemPath))
+                        : const AssetImage('images/avatar.jpg') as ImageProvider,
+                  ),
+                  title: Text(
+                    ficha["nome"] ?? "Sem nome",
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    "${ficha["classe"] ?? "Classe indefinida"} - ${ficha["raca"] ?? "Raça indefinida"}",
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Color(0xFFEAF8FF)),
+                    onSelected: (value) {
+                      if (value == 'editar') {
+                        _editarFichaModal(ficha, i);
+                      } else if (value == 'ver') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DetalhesFicha(ficha: ficha),
+                          ),
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(value: 'ver', child: Text("Visualizar")),
+                      const PopupMenuItem(value: 'editar', child: Text("Editar")),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
   }
 }

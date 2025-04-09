@@ -72,11 +72,25 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF5D3A9B),
+      backgroundColor: const Color(0xFFEAF8FF),
       appBar: AppBar(
-        title: Text("settings".tr(), style: const TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF4d346b),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "Settings",
+          style: TextStyle(
+            color: Color(0xFFFF3A3A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: const Color(0xFF2A2A31),
+        iconTheme: const IconThemeData(color: Color(0xFFEAF8FF)),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(3.0),
+          child: Divider(
+            color: Color(0xFFFF3A3A),
+            thickness: 3,
+            height: 3,
+          ),
+        ),
       ),
       body: ListView(
         children: [
@@ -85,38 +99,38 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (value) {
               setState(() => modoEscuro = value);
             },
-            title: Text("dark_mode".tr(), style: const TextStyle(color: Colors.white)),
-            activeColor: Colors.white,
+            title: Text("dark_mode".tr(), style: const TextStyle(color: Color(0xFF2A2A31))),
+            activeColor: const Color(0xFF6F7684),
           ),
-          const Divider(color: Colors.white30),
+          const Divider(color: Color(0xFF6F7684)),
           ListTile(
-            leading: const Icon(Icons.delete, color: Colors.white),
-            title: Text("clear_fichas".tr(), style: const TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.delete, color: Color(0xFF2A2A31)),
+            title: Text("clear_fichas".tr(), style: const TextStyle(color: Color(0xFF2A2A31))),
             onTap: () {
               _confirmarAcao("clear_fichas".tr(), "clear_fichas".tr(), _limparFichas);
             },
           ),
           ListTile(
-            leading: const Icon(Icons.sticky_note_2, color: Colors.white),
-            title: Text("clear_notas".tr(), style: const TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.sticky_note_2, color: Color(0xFF2A2A31)),
+            title: Text("clear_notas".tr(), style: const TextStyle(color: Color(0xFF2A2A31))),
             onTap: () {
               _confirmarAcao("clear_notas".tr(), "clear_notas".tr(), _limparNotas);
             },
           ),
           ListTile(
-            leading: const Icon(Icons.person_remove, color: Colors.white),
-            title: Text("reset_profile".tr(), style: const TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.person_remove, color: Color(0xFF2A2A31)),
+            title: Text("reset_profile".tr(), style: const TextStyle(color: Color(0xFF2A2A31))),
             onTap: () {
               _confirmarAcao("reset_profile".tr(), "reset_profile".tr(), _resetarPerfil);
             },
           ),
           ListTile(
-            leading: const Icon(Icons.language, color: Colors.white),
-            title: Text("select_language".tr(), style: const TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.language, color: Color(0xFF2A2A31)),
+            title: Text("select_language".tr(), style: const TextStyle(color: Color(0xFF2A2A31))),
             onTap: () {
               showModalBottomSheet(
                 context: context,
-                backgroundColor: const Color(0xFF4d346b),
+                backgroundColor: const Color(0xFF2A2A31),
                 builder: (_) => Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

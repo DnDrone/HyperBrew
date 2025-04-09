@@ -1,3 +1,4 @@
+// lib/CreateFicha.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -58,17 +59,31 @@ class _CreateFichaState extends State<CreateFicha> {
       content: Text('Ficha salva e PDF gerado: ${file.path}'),
     ));
 
-    Navigator.pop(context); // Volta pra home
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF5D3A9B),
+      backgroundColor: const Color(0xFFEAF8FF),
       appBar: AppBar(
-        title: const Text("Criar Ficha", style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF4d346b),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: const Color(0xFF2A2A31),
+        iconTheme: const IconThemeData(color: Color(0xFFEAF8FF)),
+        title: const Text(
+          "Criar Ficha",
+          style: TextStyle(
+            color: Color(0xFFFF3A3A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(3),
+          child: Divider(
+            color: Color(0xFFFF3A3A),
+            thickness: 3,
+            height: 3,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -80,10 +95,11 @@ class _CreateFichaState extends State<CreateFicha> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _gerarPdfESalvar,
-              child: const Text("Salvar PDF e Ficha", style: TextStyle(color: Color(0xFF5D3A9B))),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
+                backgroundColor: const Color(0xFF6F7684),
+                foregroundColor: Colors.white,
               ),
+              child: const Text("Salvar PDF e Ficha"),
             )
           ],
         ),
@@ -92,17 +108,20 @@ class _CreateFichaState extends State<CreateFicha> {
   }
 
   Widget _buildCampo(String label, TextEditingController controller) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white),
-        enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white, width: 2),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: Color(0xFF2A2A31)),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Color(0xFF2A2A31)),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF2A2A31)),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF2A2A31), width: 2),
+          ),
         ),
       ),
     );
