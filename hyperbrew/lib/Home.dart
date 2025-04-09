@@ -3,20 +3,24 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
 import 'CreateFicha.dart';
-import 'DiceRoller.dart';
+import 'DetalhesFicha.dart';
 import 'PlayerProfile.dart';
 import 'NotesPage.dart';
 import 'SettingsPage.dart';
 
 class Home extends StatefulWidget {
+  const Home({super.key});
+
   @override
-  _HomeState createState() => _HomeState();
+  State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
   List<Map<String, dynamic>> _fichas = [];
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -44,10 +48,10 @@ class _HomeState extends State<Home> {
   }
 
   void _editarFichaModal(Map<String, dynamic> ficha, int index) {
-    final nomeCtrl = TextEditingController(text: ficha["nome"]);
-    final classeCtrl = TextEditingController(text: ficha["classe"]);
-    final racaCtrl = TextEditingController(text: ficha["raca"]);
-    String? novaImagem = ficha["imagem"];
+    final nomeCtrl = TextEditingController(text: ficha["nome"]?.toString() ?? '');
+    final classeCtrl = TextEditingController(text: ficha["classe"]?.toString() ?? '');
+    final racaCtrl = TextEditingController(text: ficha["raca"]?.toString() ?? '');
+    String? novaImagem = ficha["imagem"]?.toString();
 
     showModalBottomSheet(
       context: context,
@@ -74,7 +78,7 @@ class _HomeState extends State<Home> {
                 },
                 child: CircleAvatar(
                   radius: 40,
-                  backgroundImage: novaImagem != null
+                  backgroundImage: (novaImagem != null && File(novaImagem!).existsSync())
                       ? FileImage(File(novaImagem!))
                       : const AssetImage('images/avatar.jpg') as ImageProvider,
                 ),
@@ -128,8 +132,98 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Widget _fichasPage() {
+    return Scaffold(
+      backgroundColor: const Color(0xFF5D3A9B),
+      body: _fichas.isEmpty
+          ? const Center(child: Text("Nenhuma ficha criada ainda.", style: TextStyle(color: Colors.white70)))
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _fichas.length,
+              itemBuilder: (context, i) {
+                final ficha = _fichas[i];
+                final imagemPath = ficha["imagem"]?.toString();
+                final temImagemValida = imagemPath != null && File(imagemPath).existsSync();
+
+                return Card(
+                  color: const Color(0xFF4d346b),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: temImagemValida
+                          ? FileImage(File(imagemPath))
+                          : const AssetImage('images/avatar.jpg') as ImageProvider,
+                    ),
+                    title: Text(
+                      ficha["nome"]?.toString() ?? "Sem nome",
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      "${ficha["classe"]?.toString() ?? "Classe indefinida"} - ${ficha["raca"]?.toString() ?? "Raça indefinida"}",
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    trailing: PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, color: Colors.white),
+                      onSelected: (value) async {
+                        if (value == 'editar') {
+                          _editarFichaModal(ficha, i);
+                        } else if (value == 'ver') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DetalhesFicha(
+                                ficha: {
+                                  "nome": (ficha["nome"] ?? "Sem nome").toString(),
+                                  "descricao":
+                                      "${(ficha["classe"] ?? "Classe indefinida").toString()} - ${(ficha["raca"] ?? "Raça indefinida").toString()}",
+                                  "imagem": (ficha["imagem"] ?? "").toString(),
+                                  "forca": int.tryParse(ficha["forca"]?.toString() ?? "") ?? 10,
+                                  "destreza": int.tryParse(ficha["destreza"]?.toString() ?? "") ?? 10,
+                                  "constituicao": int.tryParse(ficha["constituicao"]?.toString() ?? "") ?? 10,
+                                  "inteligencia": int.tryParse(ficha["inteligencia"]?.toString() ?? "") ?? 10,
+                                  "sabedoria": int.tryParse(ficha["sabedoria"]?.toString() ?? "") ?? 10,
+                                  "carisma": int.tryParse(ficha["carisma"]?.toString() ?? "") ?? 10,
+                                  "equipamentos": (ficha["equipamentos"] is List)
+                                      ? ficha["equipamentos"]
+                                      : ['Espada curta', 'Armadura de couro'],
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(value: 'ver', child: Text("Visualizar")),
+                        const PopupMenuItem(value: 'editar', child: Text("Editar")),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF4d346b),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const CreateFicha()),
+          ).then((_) => _carregarFichas());
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _pages = [
+      _fichasPage(),
+      const PlayerProfile(),
+      const NotesPage(),
+      const SettingsPage(),
+    ];
+
     return Scaffold(
       backgroundColor: const Color(0xFF5D3A9B),
       appBar: AppBar(
@@ -141,166 +235,27 @@ class _HomeState extends State<Home> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      drawer: Drawer(
-        backgroundColor: const Color(0xFF4d346b),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF4d346b)),
-              child: Center(
-                child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.add, color: Colors.white),
-              title: const Text('Criar Ficha', style: TextStyle(color: Colors.white)),
-              onTap: () async {
-                Navigator.pop(context);
-                await Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateFicha()));
-                _carregarFichas();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.casino, color: Colors.white),
-              title: const Text('Rolador de Dados', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const DiceRoller()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person, color: Colors.white),
-              title: const Text('Perfil', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const PlayerProfile()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.note, color: Colors.white),
-              title: const Text('Notas de Sessão', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotesPage()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings, color: Colors.white),
-              title: const Text('Configurações', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
-              },
-            ),
-          ],
-        ),
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: CurvedNavigationBar(
+        index: _selectedIndex,
+        items: const <Widget>[
+          Icon(Icons.folder_shared, size: 30),
+          Icon(Icons.person, size: 30),
+          Icon(Icons.note, size: 30),
+          Icon(Icons.settings, size: 30),
+        ],
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+            if (index == 0) _carregarFichas();
+          });
+        },
+        color: const Color(0xFF4d346b),
+        backgroundColor: const Color(0xFF5D3A9B),
+        buttonBackgroundColor: Colors.white,
+        animationCurve: Curves.easeInOut,
+        animationDuration: const Duration(milliseconds: 300),
       ),
-      body: _fichas.isEmpty
-          ? const Center(child: Text("Nenhuma ficha criada.", style: TextStyle(color: Colors.white, fontSize: 18)))
-          : ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: _fichas.length,
-              itemBuilder: (context, i) {
-                final ficha = _fichas[i];
-                return Card(
-                  color: const Color(0xFF4d346b),
-                  elevation: 5,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          CircleAvatar(
-                            backgroundImage: ficha["imagem"] != null
-                                ? FileImage(File(ficha["imagem"]))
-                                : const AssetImage('images/avatar.jpg') as ImageProvider,
-                            radius: 30,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              ficha["nome"] ?? "Sem Nome",
-                              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ]),
-                        const SizedBox(height: 8),
-                        Text("Classe: ${ficha["classe"]}, Raça: ${ficha["raca"]}",
-                            style: TextStyle(color: Colors.grey[300], fontSize: 14)),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  backgroundColor: const Color(0xFF4d346b),
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                                  ),
-                                  builder: (_) => Padding(
-                                    padding: const EdgeInsets.all(20),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundImage: ficha["imagem"] != null
-                                              ? FileImage(File(ficha["imagem"]))
-                                              : const AssetImage('images/avatar.jpg') as ImageProvider,
-                                          radius: 50,
-                                        ),
-                                        const SizedBox(height: 15),
-                                        Text("Nome: ${ficha["nome"]}",
-                                            style: const TextStyle(color: Colors.white, fontSize: 18)),
-                                        Text("Classe: ${ficha["classe"]}",
-                                            style: const TextStyle(color: Colors.white, fontSize: 16)),
-                                        Text("Raça: ${ficha["raca"]}",
-                                            style: const TextStyle(color: Colors.white, fontSize: 16)),
-                                        const Divider(color: Colors.white30, height: 30),
-                                        Text("Status: Vida 100, Mana 50",
-                                            style: const TextStyle(color: Colors.white70)),
-                                        Text("Equipamentos: Espada, Armadura",
-                                            style: const TextStyle(color: Colors.white70)),
-                                        Text("Habilidades: Corte Rápido, Cura Mágica",
-                                            style: const TextStyle(color: Colors.white70)),
-                                        const SizedBox(height: 20),
-                                        ElevatedButton.icon(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            _editarFichaModal(ficha, i);
-                                          },
-                                          icon: const Icon(Icons.edit),
-                                          label: const Text("Editar"),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                            foregroundColor: Color(0xFF4d346b),
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: const Text("Ver Detalhes"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: Color(0xFF4d346b),
-                              ),
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
     );
   }
 }
