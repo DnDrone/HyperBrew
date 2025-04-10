@@ -1,0 +1,18 @@
+{
+    "settings": "Settings",
+    "dark_mode": "Dark Mode",
+    "clear_fichas": "Delete all characters",
+    "clear_notas": "Delete all notes",
+    "reset_profile": "Reset profile",
+    "select_language": "Select language",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "notes": "Notes",
+    "profile": "Profile",
+    "create_ficha": "Create Character",
+    "dice_roller": "Dice Roller",
+    "edit": "Edit",
+    "enter": "Enter",
+    "view_details": "View Details"
+  }
+  
