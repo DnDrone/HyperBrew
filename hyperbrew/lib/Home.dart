@@ -1,16 +1,15 @@
-// coloque hyperbrew na topbar e uma linha vermelha de divisoria
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'CreateFicha.dart';
 import 'DetalhesFicha.dart';
 import 'PlayerProfile.dart';
 import 'NotesPage.dart';
 import 'SettingsPage.dart';
 import 'DiceRoller.dart';
+import 'CreateFicha.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -200,12 +199,25 @@ class _HomeState extends State<Home> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFFF3A3A),
-        foregroundColor: const Color(0xFFEAF8FF),
-        onPressed: () => setState(() => _selectedIndex = 2),
-        child: const Icon(Icons.play_arrow),
-      ),
+      floatingActionButton: _selectedIndex == 2
+          ? FloatingActionButton(
+              backgroundColor: const Color(0xFFFF3A3A),
+              foregroundColor: const Color(0xFFEAF8FF),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CreateFicha()),
+                );
+                await _carregarFichas();
+              },
+              child: const Icon(Icons.add),
+            )
+          : FloatingActionButton(
+              backgroundColor: const Color(0xFFFF3A3A),
+              foregroundColor: const Color(0xFFEAF8FF),
+              onPressed: () => setState(() => _selectedIndex = 2),
+              child: const Icon(Icons.play_arrow),
+            ),
     );
   }
 
