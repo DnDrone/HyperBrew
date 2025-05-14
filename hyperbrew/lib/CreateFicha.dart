@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'FichaModel.dart';
+import 'FichaDataBase.dart';
+import 'PdfService.dart';
+
 
 class CreateFicha extends StatefulWidget {
   const CreateFicha({super.key});
@@ -17,6 +21,15 @@ class _CreateFichaState extends State<CreateFicha> {
   final _nomeController = TextEditingController();
   final _classeController = TextEditingController();
   final _racaController = TextEditingController();
+  final _descricaoController = TextEditingController();
+  final _forcaController = TextEditingController();
+  final _destrezaController = TextEditingController();
+  final _constituicaoController = TextEditingController();
+  final _inteligenciaController = TextEditingController();
+  final _sabedoriaController = TextEditingController();
+  final _carismaController = TextEditingController();
+  final _equipamentosController = TextEditingController(); 
+
 
   Future<void> _salvarFichaLocal() async {
     final prefs = await SharedPreferences.getInstance();
@@ -32,35 +45,42 @@ class _CreateFichaState extends State<CreateFicha> {
     await prefs.setStringList('fichas', fichas);
   }
 
-  void _gerarPdfESalvar() async {
-    final pdf = pw.Document();
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text("Ficha de Personagem", style: pw.TextStyle(fontSize: 24)),
-            pw.SizedBox(height: 20),
-            pw.Text("Nome: ${_nomeController.text}"),
-            pw.Text("Classe: ${_classeController.text}"),
-            pw.Text("Raça: ${_racaController.text}"),
-          ],
-        ),
+Future<void> _gerarPdfESalvar() async {
+  final novaFicha = Ficha(
+    nome: _nomeController.text,
+    classe: _classeController.text,
+    raca: _racaController.text,
+    imagemPath: '',
+    descricao: _descricaoController.text,
+    forca: int.tryParse(_forcaController.text) ?? 0,
+    destreza: int.tryParse(_destrezaController.text) ?? 0,
+    constituicao: int.tryParse(_constituicaoController.text) ?? 0,
+    inteligencia: int.tryParse(_inteligenciaController.text) ?? 0,
+    sabedoria: int.tryParse(_sabedoriaController.text) ?? 0,
+    carisma: int.tryParse(_carismaController.text) ?? 0,
+    equipamentos: _equipamentosController.text
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList(),
+  );
+
+  final fichaCriada = await FichaDatabase.instance.create(novaFicha);
+
+  final pdfFile = await PdfService.gerarPdfFicha(fichaCriada);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        'Ficha salva em DB (id=${fichaCriada.id}) e PDF em ${pdfFile.path}',
       ),
-    );
+    ),
+  );
 
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File('${dir.path}/${_nomeController.text}_ficha.pdf');
-    await file.writeAsBytes(await pdf.save());
+  Navigator.pop(context);
+}
 
-    await _salvarFichaLocal();
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Ficha salva e PDF gerado: ${file.path}'),
-    ));
-
-    Navigator.pop(context);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +112,15 @@ class _CreateFichaState extends State<CreateFicha> {
             _buildCampo("Nome do personagem", _nomeController),
             _buildCampo("Classe", _classeController),
             _buildCampo("Raça", _racaController),
+            _buildCampo("Descrição", _descricaoController),
+            _buildCampo("Força", _forcaController),
+            _buildCampo("Destreza", _destrezaController),
+            _buildCampo("Constituição", _constituicaoController),
+            _buildCampo("Inteligência", _inteligenciaController),
+            _buildCampo("Sabedoria", _sabedoriaController),
+            _buildCampo("Carisma", _carismaController),
+            _buildCampo("Equipamentos (separados por vírgula)", _equipamentosController),
+
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _gerarPdfESalvar,
