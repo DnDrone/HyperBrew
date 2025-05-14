@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:hyperbrew/FichaModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'DetalhesFicha.dart';
+import 'FichaDatabase.dart';
 import 'PlayerProfile.dart';
 import 'NotesPage.dart';
 import 'SettingsPage.dart';
@@ -12,6 +14,7 @@ import 'DiceRoller.dart';
 import 'CreateFicha.dart';
 
 class Home extends StatefulWidget {
+
   const Home({super.key});
 
   @override
@@ -19,6 +22,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  List<Ficha> __fichas = [];
   List<Map<String, dynamic>> _fichas = [];
   int _selectedIndex = 2;
 
@@ -39,6 +43,14 @@ class _HomeState extends State<Home> {
     setState(() {
       _fichas = fichas;
     });
+
+    final all = await FichaDatabase.instance.readAllFichas();
+    setState(() => __fichas = all);
+  }
+
+  Future<void> _deletarFicha(int id) async {
+    await FichaDatabase.instance.delete(id);
+    await _carregarFichas();
   }
 
   Future<void> _salvarFichas() async {
@@ -91,10 +103,10 @@ class _HomeState extends State<Home> {
               ElevatedButton(
                 onPressed: () async {
                   setState(() {
-                    _fichas[index]["nome"] = nomeCtrl.text;
-                    _fichas[index]["classe"] = classeCtrl.text;
-                    _fichas[index]["raca"] = racaCtrl.text;
-                    _fichas[index]["imagem"] = novaImagem;
+                    __fichas[index].name = nomeCtrl.text;
+                    __fichas[index].classe = classeCtrl.text;
+                    __fichas[index].raca = racaCtrl.text;
+                    __fichas[index].imagemPath = novaImagem!;
                   });
                   await _salvarFichas();
                   Navigator.pop(context);
