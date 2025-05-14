@@ -105,9 +105,10 @@ Future<void> _gerarPdfESalvar() async {
           ),
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
+
           children: [
             _buildCampo("Nome do personagem", _nomeController),
             _buildCampo("Classe", _classeController),
