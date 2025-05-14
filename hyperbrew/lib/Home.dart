@@ -10,7 +10,7 @@ import 'NotesPage.dart';
 import 'SettingsPage.dart';
 import 'DiceRoller.dart';
 import 'CreateFicha.dart';
-import 'FichaDatabase.dart';
+import 'FichaDataBase.dart';
 import 'FichaModel.dart';
 
 class Home extends StatefulWidget {
