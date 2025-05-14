@@ -105,6 +105,7 @@ Future<void> _gerarPdfESalvar() async {
           ),
         ),
       ),
+<<<<<<< HEAD
      body: SingleChildScrollView(
   child: Padding(
     padding: const EdgeInsets.all(20),
@@ -129,6 +130,35 @@ Future<void> _gerarPdfESalvar() async {
             foregroundColor: Colors.white,
           ),
           child: const Text("Salvar PDF e Ficha"),
+=======
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+
+          children: [
+            _buildCampo("Nome do personagem", _nomeController),
+            _buildCampo("Classe", _classeController),
+            _buildCampo("Raça", _racaController),
+            _buildCampo("Descrição", _descricaoController),
+            _buildCampo("Força", _forcaController),
+            _buildCampo("Destreza", _destrezaController),
+            _buildCampo("Constituição", _constituicaoController),
+            _buildCampo("Inteligência", _inteligenciaController),
+            _buildCampo("Sabedoria", _sabedoriaController),
+            _buildCampo("Carisma", _carismaController),
+            _buildCampo("Equipamentos (separados por vírgula)", _equipamentosController),
+
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _gerarPdfESalvar,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6F7684),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text("Salvar PDF e Ficha"),
+            )
+          ],
+>>>>>>> fd8ab049a45428ce790ad4f0c91fdff026d3d340
         ),
       ],
     ),
