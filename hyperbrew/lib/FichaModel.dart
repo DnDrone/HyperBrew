@@ -1,17 +1,17 @@
 class Ficha {
-  final int? id;
-  final String nome;
-  final String classe;
-  final String raca;
-  final String imagemPath;
-  final String? descricao;
-  final int forca;
-  final int destreza;
-  final int constituicao;
-  final int inteligencia;
-  final int sabedoria;
-  final int carisma;
-  final List<String> equipamentos;
+  int? id;
+  String nome;
+  String classe;
+  String raca;
+  String imagemPath;  // Usando String para caminho de imagem
+  String? descricao;
+  int forca;
+  int destreza;
+  int constituicao;
+  int inteligencia;
+  int sabedoria;
+  int carisma;
+  List<String> equipamentos;  // Lista de equipamentos como Strings
 
   Ficha({
     this.id,
@@ -29,6 +29,7 @@ class Ficha {
     required this.equipamentos,
   });
 
+  // Método para criar uma cópia de Ficha com alterações em campos opcionais
   Ficha copyWith({
     int? id,
     String? nome,
@@ -57,17 +58,18 @@ class Ficha {
       inteligencia: inteligencia ?? this.inteligencia,
       sabedoria: sabedoria ?? this.sabedoria,
       carisma: carisma ?? this.carisma,
-      equipamentos: equipamentos ?? this.equipamentos,
+      equipamentos: equipamentos ?? List.from(this.equipamentos),
     );
   }
 
+  // Converte a ficha para um mapa para uso em banco de dados ou armazenamento
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'nome': nome,
       'classe': classe,
       'raca': raca,
-      'imagemPath': imagemPath,
+      'imagemPath': imagemPath,  // Aqui o caminho da imagem
       'descricao': descricao,
       'forca': forca,
       'destreza': destreza,
@@ -75,25 +77,26 @@ class Ficha {
       'inteligencia': inteligencia,
       'sabedoria': sabedoria,
       'carisma': carisma,
-      'equipamentos': equipamentos.join(','), // salva como string separada por vírgula
+      'equipamentos': equipamentos.join(','), // Equipamentos como string separada por vírgula
     };
   }
 
+  // Construtor de fábrica para criar uma instância de Ficha a partir de um mapa
   factory Ficha.fromMap(Map<String, dynamic> map) {
     return Ficha(
       id: map['id'] as int?,
       nome: map['nome'] ?? '',
       classe: map['classe'] ?? '',
       raca: map['raca'] ?? '',
-      imagemPath: map['imagemPath'] ?? '',
+      imagemPath: map['imagemPath'] ?? '',  // Caminho da imagem
       descricao: map['descricao'],
-      forca: map['forca'] ?? 0,
-      destreza: map['destreza'] ?? 0,
-      constituicao: map['constituicao'] ?? 0,
-      inteligencia: map['inteligencia'] ?? 0,
-      sabedoria: map['sabedoria'] ?? 0,
-      carisma: map['carisma'] ?? 0,
-      equipamentos: (map['equipamentos'] as String?)?.split(',') ?? [],
+      forca: map['forca'] is int ? map['forca'] : int.tryParse(map['forca'].toString()) ?? 0,
+      destreza: map['destreza'] is int ? map['destreza'] : int.tryParse(map['destreza'].toString()) ?? 0,
+      constituicao: map['constituicao'] is int ? map['constituicao'] : int.tryParse(map['constituicao'].toString()) ?? 0,
+      inteligencia: map['inteligencia'] is int ? map['inteligencia'] : int.tryParse(map['inteligencia'].toString()) ?? 0,
+      sabedoria: map['sabedoria'] is int ? map['sabedoria'] : int.tryParse(map['sabedoria'].toString()) ?? 0,
+      carisma: map['carisma'] is int ? map['carisma'] : int.tryParse(map['carisma'].toString()) ?? 0,
+      equipamentos: (map['equipamentos'] as String?)?.split(',').where((e) => e.trim().isNotEmpty).toList() ?? [],
     );
   }
 }

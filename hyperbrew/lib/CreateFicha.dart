@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'FichaModel.dart';
-import 'FichaDataBase.dart';
+import 'FichaDatabase.dart';
 import 'PdfService.dart';
 
 
@@ -105,34 +105,36 @@ Future<void> _gerarPdfESalvar() async {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            _buildCampo("Nome do personagem", _nomeController),
-            _buildCampo("Classe", _classeController),
-            _buildCampo("Raça", _racaController),
-            _buildCampo("Descrição", _descricaoController),
-            _buildCampo("Força", _forcaController),
-            _buildCampo("Destreza", _destrezaController),
-            _buildCampo("Constituição", _constituicaoController),
-            _buildCampo("Inteligência", _inteligenciaController),
-            _buildCampo("Sabedoria", _sabedoriaController),
-            _buildCampo("Carisma", _carismaController),
-            _buildCampo("Equipamentos (separados por vírgula)", _equipamentosController),
-
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _gerarPdfESalvar,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6F7684),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text("Salvar PDF e Ficha"),
-            )
-          ],
+     body: SingleChildScrollView(
+  child: Padding(
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      children: [
+        _buildCampo("Nome do personagem", _nomeController),
+        _buildCampo("Classe", _classeController),
+        _buildCampo("Raça", _racaController),
+        _buildCampo("Descrição", _descricaoController),
+        _buildCampo("Força", _forcaController),
+        _buildCampo("Destreza", _destrezaController),
+        _buildCampo("Constituição", _constituicaoController),
+        _buildCampo("Inteligência", _inteligenciaController),
+        _buildCampo("Sabedoria", _sabedoriaController),
+        _buildCampo("Carisma", _carismaController),
+        _buildCampo("Equipamentos (separados por vírgula)", _equipamentosController),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: _gerarPdfESalvar,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF6F7684),
+            foregroundColor: Colors.white,
+          ),
+          child: const Text("Salvar PDF e Ficha"),
         ),
-      ),
+      ],
+    ),
+  ),
+),
+
     );
   }
 

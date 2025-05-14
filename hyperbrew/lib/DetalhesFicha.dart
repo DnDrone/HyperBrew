@@ -1,7 +1,6 @@
-
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'FichaModel.dart'; // Importa a classe Ficha
+import 'FichaModel.dart';
 
 class DetalhesFicha extends StatelessWidget {
   final Ficha ficha;
@@ -10,8 +9,7 @@ class DetalhesFicha extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String imagemPath = ficha.imagemPath;
-    final bool imagemValida = imagemPath.isNotEmpty && File(imagemPath).existsSync();
+    final bool imagemValida = ficha.imagemPath.isNotEmpty && File(ficha.imagemPath).existsSync();
 
     return Scaffold(
       appBar: AppBar(
@@ -42,13 +40,13 @@ class DetalhesFicha extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: imagemValida
-                    ? Image.file(File(imagemPath), height: 150, fit: BoxFit.cover)
+                    ? Image.file(File(ficha.imagemPath), height: 150, fit: BoxFit.cover)
                     : const Icon(Icons.person, size: 150, color: Color(0xFF2A2A31)),
               ),
             ),
             const SizedBox(height: 20),
             Text(
-              ficha.descricao ?? "Sem descrição",
+              ficha.descricao ?? "Sem",
               style: const TextStyle(fontSize: 18, color: Color(0xFF2A2A31)),
             ),
             const SizedBox(height: 20),
@@ -74,23 +72,24 @@ class DetalhesFicha extends StatelessWidget {
     );
   }
 
-  Widget _buildStatus(String nome, int valor) {
+  Widget _buildStatus(String nome, dynamic valor) {
+    int numero = int.tryParse(valor?.toString() ?? "") ?? 0;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(nome, style: const TextStyle(color: Color(0xFF2A2A31))),
-          Text(valor.toString(), style: const TextStyle(color: Color(0xFF2A2A31))),
+          Text(numero.toString(), style: const TextStyle(color: Color(0xFF2A2A31))),
         ],
       ),
     );
   }
 
   List<Widget> _buildEquipamentos() {
-    if (ficha.equipamentos.isNotEmpty) {
+    if (ficha.equipamentos is List) {
       return ficha.equipamentos
-          .map<Widget>((item) => Text("- $item", style: const TextStyle(color: Color(0xFF2A2A31))))
+          .map<Widget>((item) => Text("- ${item.toString()}", style: const TextStyle(color: Color(0xFF2A2A31))))
           .toList();
     } else {
       return [const Text("Nenhum equipamento", style: TextStyle(color: Color(0xFF2A2A31)))];
