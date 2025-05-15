@@ -12,7 +12,10 @@ import 'DiceRoller.dart';
 import 'CreateFicha.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  final int jogadorId;
+  final String jogadorNome;
+
+  const Home({super.key, required this.jogadorId, required this.jogadorNome});
 
   @override
   State<Home> createState() => _HomeState();
@@ -168,7 +171,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
-      const PlayerProfile(),
+      PlayerProfile(jogadorId: widget.jogadorId, jogadorNome: widget.jogadorNome),
       const NotesPage(),
       _buildFichasView(),
       const DiceRoller(),

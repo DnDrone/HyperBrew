@@ -4,7 +4,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayerProfile extends StatefulWidget {
-  const PlayerProfile({super.key});
+  final int jogadorId;
+  final String jogadorNome;
+
+  const PlayerProfile({
+    super.key,
+    required this.jogadorId,
+    required this.jogadorNome,
+  });
 
   @override
   State<PlayerProfile> createState() => _PlayerProfileState();
