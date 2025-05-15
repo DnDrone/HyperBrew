@@ -77,7 +77,7 @@ class _HomeState extends State<Home> {
                   radius: 40,
                   backgroundImage: (novaImagem != null && File(novaImagem!).existsSync())
                       ? FileImage(File(novaImagem!))
-                      : const AssetImage('images/avatar.jpg') as ImageProvider,
+                      : const AssetImage('images/profile.jpeg') as ImageProvider,
                 ),
               ),
               const SizedBox(height: 20),
@@ -91,7 +91,8 @@ class _HomeState extends State<Home> {
                   ficha.classe = classeCtrl.text;
                   ficha.raca = racaCtrl.text;
                   ficha.imagemPath = novaImagem ?? "";
-                  await _atualizarFicha(ficha);
+
+                  await _atualizarFicha(ficha);  // Salva no banco
                   Navigator.pop(context);
                 },
                 child: const Text("Salvar"),
@@ -234,7 +235,7 @@ class _HomeState extends State<Home> {
                   leading: CircleAvatar(
                     backgroundImage: temImagemValida
                         ? FileImage(File(imagemPath))
-                        : const AssetImage('images/avatar.jpg') as ImageProvider,
+                        : const AssetImage('images/profile.jpeg') as ImageProvider,
                   ),
                   title: Text(
                     ficha.nome ?? "Sem nome",
