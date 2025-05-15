@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'Home.dart';
-<<<<<<< Updated upstream
-
-void main() async {
-=======
 import 'Login.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'dart:io';
@@ -15,7 +10,6 @@ void main() async {
     databaseFactory = databaseFactoryFfi;
   }
 
->>>>>>> Stashed changes
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
@@ -39,7 +33,7 @@ class MyApp extends StatelessWidget {
       locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
-      home: const Login(), // Continua sendo a tela de login
+      home: const Login(), 
     );
   }
 }

@@ -37,6 +37,11 @@ dependencies:
   google_sign_in: ^6.1.4
   firebase_core: ^2.27.0
   firebase_auth: ^4.17.3
+  sqflite: ^2.3.0
+  sqflite_common_ffi: ^2.3.0 
+  path: ^1.9.0
+  permission_handler: ^10.4.0
+
 
 
 
@@ -93,4 +98,3 @@ flutter:
  
   - assets/sounds/dice_roll.mp3
   - assets/translations/
-
