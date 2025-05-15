@@ -34,15 +34,10 @@ class JogadorDatabase {
     ''');
   }
 
-  Future<int> insert(Jogador jogador) async {
-    final db = await instance.database;
-    return await db.insert('jogadores', jogador.toMap());
-  }
-
-  Future<Jogador> create(Jogador jogador) async {
+  Future<int> create(Jogador jogador) async {
     final db = await instance.database;
     final id = await db.insert('jogadores', jogador.toMap());
-    return jogador.copyWith(id: id);
+    return id;
   }
 
   Future<Jogador?> read(int id) async {
