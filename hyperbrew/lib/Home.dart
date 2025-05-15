@@ -31,17 +31,41 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _carregarFichas() async {
-   print('Carregando fichas...');
-  final fichas = await FichaDatabase.instance.readAllFichas();
-  print('Fichas carregadas: ${fichas.length}');
-  setState(() {
-    _fichas = fichas;
-  });
+    print('Carregando fichas...');
+    final fichas = await FichaDatabase.instance.readAllFichas();
+    print('Fichas carregadas: ${fichas.length}');
+    setState(() {
+      _fichas = fichas;
+    });
   }
 
   Future<void> _atualizarFicha(Ficha ficha) async {
     await FichaDatabase.instance.update(ficha);
     await _carregarFichas();
+  }
+
+  Future<void> _deletarFicha(Ficha ficha) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: Text('Deseja realmente deletar a ficha "${ficha.nome}"?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Deletar')),
+        ],
+      ),
+    );
+
+    if (confirmado == true) {
+      await FichaDatabase.instance
+          .delete(ficha.id!); // Assumindo que id é int e obrigatório
+      await _carregarFichas();
+    }
   }
 
   void _editarFichaModal(Ficha ficha) {
@@ -59,25 +83,30 @@ class _HomeState extends State<Home> {
       ),
       builder: (_) => StatefulBuilder(
         builder: (context, setModalState) => Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 40),
+          padding: EdgeInsets.fromLTRB(
+              20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 40),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Editar Ficha", style: TextStyle(color: Colors.white, fontSize: 20)),
+              const Text("Editar Ficha",
+                  style: TextStyle(color: Colors.white, fontSize: 20)),
               const SizedBox(height: 20),
               GestureDetector(
                 onTap: () async {
                   final picker = ImagePicker();
-                  final picked = await picker.pickImage(source: ImageSource.gallery);
+                  final picked =
+                      await picker.pickImage(source: ImageSource.gallery);
                   if (picked != null) {
                     setModalState(() => novaImagem = picked.path);
                   }
                 },
                 child: CircleAvatar(
                   radius: 40,
-                  backgroundImage: (novaImagem != null && File(novaImagem!).existsSync())
-                      ? FileImage(File(novaImagem!))
-                      : const AssetImage('images/profile.jpeg') as ImageProvider,
+                  backgroundImage:
+                      (novaImagem != null && File(novaImagem!).existsSync())
+                          ? FileImage(File(novaImagem!))
+                          : const AssetImage('images/profile.jpeg')
+                              as ImageProvider,
                 ),
               ),
               const SizedBox(height: 20),
@@ -92,7 +121,7 @@ class _HomeState extends State<Home> {
                   ficha.raca = racaCtrl.text;
                   ficha.imagemPath = novaImagem ?? "";
 
-                  await _atualizarFicha(ficha);  // Salva no banco
+                  await _atualizarFicha(ficha); // Salva no banco
                   Navigator.pop(context);
                 },
                 child: const Text("Salvar"),
@@ -153,7 +182,8 @@ class _HomeState extends State<Home> {
             if (value == 'config') setState(() => _selectedIndex = 4);
           },
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'perfil', child: Text("Perfil do Jogador")),
+            const PopupMenuItem(
+                value: 'perfil', child: Text("Perfil do Jogador")),
             const PopupMenuItem(value: 'config', child: Text("Configurações")),
           ],
         )
@@ -219,14 +249,17 @@ class _HomeState extends State<Home> {
 
   Widget _buildFichasView() {
     return _fichas.isEmpty
-        ? const Center(child: Text("Nenhuma ficha criada ainda.", style: TextStyle(color: Colors.black54)))
+        ? const Center(
+            child: Text("Nenhuma ficha criada ainda.",
+                style: TextStyle(color: Colors.black54)))
         : ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: _fichas.length,
             itemBuilder: (context, i) {
               final ficha = _fichas[i];
               final imagemPath = ficha.imagemPath;
-              final temImagemValida = imagemPath != null && File(imagemPath).existsSync();
+              final temImagemValida =
+                  imagemPath != null && File(imagemPath).existsSync();
 
               return Card(
                 color: const Color(0xFF2A2A31),
@@ -235,11 +268,13 @@ class _HomeState extends State<Home> {
                   leading: CircleAvatar(
                     backgroundImage: temImagemValida
                         ? FileImage(File(imagemPath))
-                        : const AssetImage('images/profile.jpeg') as ImageProvider,
+                        : const AssetImage('images/profile.jpeg')
+                            as ImageProvider,
                   ),
                   title: Text(
                     ficha.nome ?? "Sem nome",
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     "${ficha.classe ?? "Classe indefinida"} - ${ficha.raca ?? "Raça indefinida"}",
@@ -254,14 +289,22 @@ class _HomeState extends State<Home> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                           builder: (_) => DetalhesFicha(ficha: Ficha.fromMap(ficha.toMap())),
+                            builder: (_) => DetalhesFicha(
+                                ficha: Ficha.fromMap(ficha.toMap())),
                           ),
                         );
+                      } else if (value == 'deletar') {
+                        _deletarFicha(ficha);
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(value: 'ver', child: Text("Visualizar")),
-                      const PopupMenuItem(value: 'editar', child: Text("Editar")),
+                      const PopupMenuItem(
+                          value: 'ver', child: Text("Visualizar")),
+                      const PopupMenuItem(
+                          value: 'editar', child: Text("Editar")),
+                      const PopupMenuItem(
+                          value: 'deletar',
+                          child: Text("Deletar")), // NOVA OPÇÃO
                     ],
                   ),
                 ),

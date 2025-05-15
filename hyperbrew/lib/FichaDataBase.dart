@@ -17,53 +17,147 @@ class FichaDatabase {
     return _database!;
   }
 
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+ Future<Database> _initDB(String filePath) async {
+  final dbPath = await getDatabasesPath();
+  final path = join(dbPath, filePath);
 
-    print('Banco de dados localizado em: $path');
+  print('Banco de dados localizado em: $path');
 
-    return await openDatabase(
-      path,
-      version: _dbVersion,
-      onCreate: _createDB,
-      onUpgrade: _onUpgrade,
-    );
-  }
+  final db = await openDatabase(
+    path,
+    version: _dbVersion,
+    onCreate: _createDB,
+    onUpgrade: _onUpgrade,
+  );
 
-  // Criar o banco do zero
-  Future _createDB(Database db, int version) async {
-    print("Criando a tabela de fichas...");
-    await db.execute('''
-    CREATE TABLE fichas (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nome TEXT NOT NULL,
-      classe TEXT NOT NULL,
-      raca TEXT NOT NULL,
-      imagemPath TEXT NOT NULL,
-      descricao TEXT,
-      forca INTEGER NOT NULL,
-      destreza INTEGER NOT NULL,
-      constituicao INTEGER NOT NULL,
-      inteligencia INTEGER NOT NULL,
-      sabedoria INTEGER NOT NULL,
-      carisma INTEGER NOT NULL,
-      equipamentos TEXT NOT NULL
-    )
+  // Verifica se a tabela 'notas' existe, e cria se não existir
+  await _checkAndCreateNotasTable(db);
+
+  return db;
+}
+
+
+  
+Future _createDB(Database db, int version) async {
+  print("Criando a tabela de fichas...");
+  await db.execute('''
+  CREATE TABLE fichas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    classe TEXT NOT NULL,
+    raca TEXT NOT NULL,
+    imagemPath TEXT NOT NULL,
+    descricao TEXT,
+    forca INTEGER NOT NULL,
+    destreza INTEGER NOT NULL,
+    constituicao INTEGER NOT NULL,
+    inteligencia INTEGER NOT NULL,
+    sabedoria INTEGER NOT NULL,
+    carisma INTEGER NOT NULL,
+    equipamentos TEXT NOT NULL
+  )
+  ''');
+
+   await db.execute('''
+      CREATE TABLE notas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fichaId INTEGER NOT NULL,
+        titulo TEXT NOT NULL,
+        descricao TEXT,
+        data TEXT NOT NULL,
+        FOREIGN KEY (fichaId) REFERENCES fichas(id)
+      )
     ''');
   }
 
+
+
   // Atualizar o banco conforme versões
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    print('Atualizando banco de dados da versão $oldVersion para $newVersion');
-    if (oldVersion < 2) {
-      // Exemplo: adicionar coluna 'descricao' na versão 2
-      await db.execute('ALTER TABLE fichas ADD COLUMN descricao TEXT');
-      print('Coluna descricao adicionada');
-    }
-    // Futuras atualizações podem ser adicionadas aqui com else if (oldVersion < 3) { ... }
+  if (oldVersion < 2) {
+    await db.execute('ALTER TABLE fichas ADD COLUMN descricao TEXT');
+    // Cria tabela de notas se ainda não existir
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS notas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fichaId INTEGER NOT NULL,
+        titulo TEXT NOT NULL,
+        descricao TEXT,
+        data TEXT NOT NULL,
+        FOREIGN KEY(fichaId) REFERENCES fichas(id) ON DELETE CASCADE
+      )
+    ''');
   }
+}
 
+Future<void> _checkAndCreateNotasTable(Database db) async {
+  final tableExists = await db.rawQuery(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='notas'"
+  );
+
+  if (tableExists.isEmpty) {
+    print('Tabela "notas" não existe. Criando...');
+    await db.execute('''
+      CREATE TABLE notas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fichaId INTEGER NOT NULL,
+        titulo TEXT NOT NULL,
+        descricao TEXT,
+        data TEXT NOT NULL,
+        FOREIGN KEY(fichaId) REFERENCES fichas(id) ON DELETE CASCADE
+      )
+    ''');
+    print('Tabela "notas" criada com sucesso!');
+  } else {
+    print('Tabela "notas" já existe.');
+  }
+}
+
+// CRUD DAS NOTAS
+Future<int> createNota(int fichaId, Map<String, dynamic> nota) async {
+  final db = await instance.database;
+  return await db.insert('notas', {
+    'fichaId': fichaId,
+    'titulo': nota['titulo'],
+    'descricao': nota['descricao'],
+    'data': nota['data'],
+  });
+}
+
+Future<List<Map<String, dynamic>>> readNotas(int fichaId) async {
+  final db = await instance.database;
+  final result = await db.query(
+    'notas',
+    where: 'fichaId = ?',
+    whereArgs: [fichaId],
+    orderBy: 'data DESC',
+  );
+  return result;
+}
+
+Future<int> updateNota(int id, Map<String, dynamic> nota) async {
+  final db = await instance.database;
+  return await db.update(
+    'notas',
+    {
+      'titulo': nota['titulo'],
+      'descricao': nota['descricao'],
+      'data': nota['data'],
+    },
+    where: 'id = ?',
+    whereArgs: [id],
+  );
+}
+
+Future<int> deleteNota(int id) async {
+  final db = await instance.database;
+  return await db.delete('notas', where: 'id = ?', whereArgs: [id]);
+}
+
+
+
+
+// CRUD DA FICHA 
   Future<Ficha> create(Ficha ficha) async {
     final db = await instance.database;
     final id = await db.insert('fichas', ficha.toMap());
