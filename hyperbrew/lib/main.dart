@@ -3,6 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'Home.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'dart:io';
+import 'Login.dart';
+
 
 void main() async {
    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
@@ -33,7 +35,7 @@ class MyApp extends StatelessWidget {
       locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
-      home: Home(),
+      home: const Login(),
     );
   }
 }

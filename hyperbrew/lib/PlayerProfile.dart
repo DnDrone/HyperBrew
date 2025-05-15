@@ -4,15 +4,22 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayerProfile extends StatefulWidget {
-  const PlayerProfile({super.key});
+  final int jogadorId;
+  final String jogadorNome;
+
+  const PlayerProfile({
+    super.key,
+    required this.jogadorId,
+    required this.jogadorNome,
+  });
 
   @override
   State<PlayerProfile> createState() => _PlayerProfileState();
 }
 
 class _PlayerProfileState extends State<PlayerProfile> {
-  String nome = "Felipe Vilhena";
-  String nickname = "DungeonFelipe";
+  String nome = "";
+  String nickname = "";
   String sistema = "D&D 5e";
   int totalFichas = 0;
   String? avatarPath;
@@ -24,18 +31,23 @@ class _PlayerProfileState extends State<PlayerProfile> {
   @override
   void initState() {
     super.initState();
+    nome = widget.jogadorNome; // Usa nome recebido no construtor como base
     _carregarDados();
   }
 
   Future<void> _carregarDados() async {
     final prefs = await SharedPreferences.getInstance();
-    final fichas = prefs.getStringList('fichas') ?? [];
+
+    // Sufixo para armazenar dados por jogador
+    final id = widget.jogadorId.toString();
+
+    final fichas = prefs.getStringList('fichas_$id') ?? [];
 
     setState(() {
-      nome = prefs.getString('nome') ?? nome;
-      nickname = prefs.getString('nickname') ?? nickname;
-      sistema = prefs.getString('sistema') ?? sistema;
-      avatarPath = prefs.getString('avatarPath');
+      nome = prefs.getString('nome_$id') ?? widget.jogadorNome;
+      nickname = prefs.getString('nickname_$id') ?? "SemNickname";
+      sistema = prefs.getString('sistema_$id') ?? "D&D 5e";
+      avatarPath = prefs.getString('avatarPath_$id');
       totalFichas = fichas.length;
 
       nomeController.text = nome;
@@ -46,9 +58,11 @@ class _PlayerProfileState extends State<PlayerProfile> {
 
   Future<void> _salvarDados() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('nome', nomeController.text);
-    await prefs.setString('nickname', nicknameController.text);
-    await prefs.setString('sistema', sistemaController.text);
+    final id = widget.jogadorId.toString();
+
+    await prefs.setString('nome_$id', nomeController.text);
+    await prefs.setString('nickname_$id', nicknameController.text);
+    await prefs.setString('sistema_$id', sistemaController.text);
 
     setState(() {
       nome = nomeController.text;
@@ -65,12 +79,14 @@ class _PlayerProfileState extends State<PlayerProfile> {
 
     if (imagem != null) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('avatarPath', imagem.path);
+      final id = widget.jogadorId.toString();
+      await prefs.setString('avatarPath_$id', imagem.path);
       setState(() {
         avatarPath = imagem.path;
       });
     }
   }
+
 
   void _abrirEditor() {
     showModalBottomSheet(

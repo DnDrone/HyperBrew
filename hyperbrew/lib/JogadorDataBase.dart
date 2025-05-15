@@ -6,13 +6,11 @@ class JogadorDatabase {
   static final JogadorDatabase instance = JogadorDatabase._init();
   static Database? _database;
 
-  static const int _dbVersion = 1;
-
   JogadorDatabase._init();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('jogador.db');
+    _database = await _initDB('jogadores.db');
     return _database!;
   }
 
@@ -20,38 +18,33 @@ class JogadorDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    print('Banco de dados localizado em: $path');
-
     return await openDatabase(
       path,
-      version: _dbVersion,
+      version: 1,
       onCreate: _createDB,
     );
   }
 
-  Future _createDB(Database db, int version) async {
-    print("Criando a tabela de jogadores...");
+  Future<void> _createDB(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE jogador (
+      CREATE TABLE jogadores (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE
+        nome TEXT NOT NULL
       )
     ''');
   }
 
-  Future<Jogador> create(Jogador jogador) async {
+  Future<int> create(Jogador jogador) async {
     final db = await instance.database;
-    final id = await db.insert('jogador', jogador.toMap());
-    print('Jogador criado com ID: $id');
-    return jogador.copyWith(id: id);
+    final id = await db.insert('jogadores', jogador.toMap());
+    return id;
   }
 
-  Future<Jogador?> readJogador(int id) async {
+  Future<Jogador?> read(int id) async {
     final db = await instance.database;
     final maps = await db.query(
-      'jogador',
-      columns: ['id', 'nome', 'email'],
+      'jogadores',
+      columns: ['id', 'nome'],
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -63,17 +56,16 @@ class JogadorDatabase {
     }
   }
 
-  Future<List<Jogador>> readAllJogadores() async {
+  Future<List<Jogador>> readAll() async {
     final db = await instance.database;
-    final result = await db.query('jogador');
-    print('Jogadores carregados: ${result.length}');
-    return result.map((json) => Jogador.fromMap(json)).toList();
+    final result = await db.query('jogadores');
+    return result.map((map) => Jogador.fromMap(map)).toList();
   }
 
   Future<int> update(Jogador jogador) async {
     final db = await instance.database;
     return db.update(
-      'jogador',
+      'jogadores',
       jogador.toMap(),
       where: 'id = ?',
       whereArgs: [jogador.id],
@@ -82,7 +74,11 @@ class JogadorDatabase {
 
   Future<int> delete(int id) async {
     final db = await instance.database;
-    return await db.delete('jogador', where: 'id = ?', whereArgs: [id]);
+    return db.delete(
+      'jogadores',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future close() async {
