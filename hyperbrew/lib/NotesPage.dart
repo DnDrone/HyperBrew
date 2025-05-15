@@ -45,7 +45,7 @@ class _NotesPageState extends State<NotesPage> {
           preferredSize: Size.fromHeight(3.0),
           child: Divider(
             color: Color(0xFFFF3A3A),
-            thickness: 3,
+            thickness: 5,
             height: 3,
           ),
         ),
