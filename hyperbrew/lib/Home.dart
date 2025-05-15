@@ -31,7 +31,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _carregarFichas() async {
-    print('Carregando fichas...');
+   print('Carregando fichas...');
   final fichas = await FichaDatabase.instance.readAllFichas();
   print('Fichas carregadas: ${fichas.length}');
   setState(() {
