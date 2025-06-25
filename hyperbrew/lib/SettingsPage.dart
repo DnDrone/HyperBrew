@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Importe Firebase Auth
+import 'package:google_sign_in/google_sign_in.dart'; // Importe Google Sign-In
+import 'LoginPage.dart'; 
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -67,6 +70,25 @@ class _SettingsPageState extends State<SettingsPage> {
     await prefs.remove('avatarPath');
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("reset_profile".tr())));
+  }
+
+  // Novo método para logout
+  Future<void> _signOut() async {
+    try {
+      await GoogleSignIn().signOut(); // Desloga do Google
+      await FirebaseAuth.instance.signOut(); // Desloga do Firebase
+      // Redireciona para a tela de login
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+        (Route<dynamic> route) => false,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Deslogado com sucesso!")));
+    } catch (e) {
+      print("Erro ao deslogar: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Falha ao deslogar: $e')),
+      );
+    }
   }
 
   @override
@@ -152,7 +174,15 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               );
             },
-          )
+          ),
+          const Divider(color: Color(0xFF6F7684)),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Color(0xFFFF3A3A)), // Ícone de logout
+            title: const Text("Sair", style: TextStyle(color: Color(0xFFFF3A3A))),
+            onTap: () {
+              _confirmarAcao("Sair", "Tem certeza que deseja sair?", _signOut); // Chamada para a função de logout
+            },
+          ),
         ],
       ),
     );
