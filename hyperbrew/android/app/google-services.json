@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "83695472584-o809p1mlq5mgjund2m6d3vekckii74m3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hyperbrew",
+            "certificate_hash": "1ca8deae118ce0262b888b3c9b39cd88c2a8ddba"
+          }
+        },
+        {
           "client_id": "83695472584-q21955nh00bemcbh2i4u5nk0p6v512on.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
