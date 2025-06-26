@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'FichaDataBase.dart';  // importe sua classe do banco
 import 'FichaModel.dart';     // modelo da ficha
+<<<<<<< HEAD
+=======
+import 'LoginPage.dart';
+>>>>>>> bc68cc2bf08650bc3b1dbad283fb8df0dc5136b5
 import 'NotesFichaPage.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart'; // Importe Firebase Auth
@@ -73,90 +77,90 @@ class _NotesPageState extends State<NotesPage> {
       ),
       body: _fichas.isEmpty
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    FirebaseAuth.instance.currentUser == null
-                        ? "Faça login para ver suas notas de fichas."
-                        : "Nenhuma ficha criada ainda para notas.",
-                    style: const TextStyle(color: Color(0xFF2A2A31)),
-                    textAlign: TextAlign.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              FirebaseAuth.instance.currentUser == null
+                  ? "Faça login para ver suas notas de fichas."
+                  : "Nenhuma ficha criada ainda para notas.",
+              style: const TextStyle(color: Color(0xFF2A2A31)),
+              textAlign: TextAlign.center,
+            ),
+            if (FirebaseAuth.instance.currentUser == null)
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginPage()), // Assume LoginPage existe
+                    ).then((_) => _carregarFichas());
+                  },
+                  child: const Text("Fazer Login"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2A2A31),
+                    foregroundColor: Colors.white,
                   ),
-                   if (FirebaseAuth.instance.currentUser == null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()), // Assume LoginPage existe
-                        ).then((_) => _carregarFichas());
-                      },
-                      child: const Text("Fazer Login"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2A2A31),
-                        foregroundColor: Colors.white,
+                ),
+              ),
+          ],
+        ),
+      )
+          : ListView.builder(
+        itemCount: _fichas.length,
+        padding: const EdgeInsets.all(16),
+        itemBuilder: (context, i) {
+          final ficha = _fichas[i];
+          return Card(
+            color: const Color(0xFF2A2A31),
+            margin: const EdgeInsets.only(bottom: 16),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundImage: (ficha.imagemPath != null && ficha.imagemPath!.isNotEmpty)
+                    ? FileImage(File(ficha.imagemPath!))
+                    : const AssetImage('images/avatar.jpg') as ImageProvider,
+              ),
+              title: Text(
+                ficha.nome,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                "${ficha.classe} - ${ficha.raca}",
+                style: const TextStyle(color: Colors.white70),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white70),
+              onTap: () {
+                if (ficha.id == null) {
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text('Erro'),
+                      content: const Text('Esta ficha ainda não foi salva e não tem ID válido.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => NotesFichaPage(
+                        fichaId: ficha.id!,
+                        fichaNome: ficha.nome,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              itemCount: _fichas.length,
-              padding: const EdgeInsets.all(16),
-              itemBuilder: (context, i) {
-                final ficha = _fichas[i];
-                return Card(
-                  color: const Color(0xFF2A2A31),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: (ficha.imagemPath != null && ficha.imagemPath!.isNotEmpty)
-                          ? FileImage(File(ficha.imagemPath!))
-                          : const AssetImage('images/avatar.jpg') as ImageProvider,
-                    ),
-                    title: Text(
-                      ficha.nome,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      "${ficha.classe} - ${ficha.raca}",
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white70),
-                    onTap: () {
-                      if (ficha.id == null) {
-                        showDialog(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: const Text('Erro'),
-                            content: const Text('Esta ficha ainda não foi salva e não tem ID válido.'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => NotesFichaPage(
-                              fichaId: ficha.id!,
-                              fichaNome: ficha.nome,
-                            ),
-                          ),
-                        ).then((_) => _carregarFichas());
-                      }
-                    },
-                  ),
-                );
+                  ).then((_) => _carregarFichas());
+                }
               },
             ),
+          );
+        },
+      ),
     );
   }
 }
