@@ -8,6 +8,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'FichaModel.dart';
 import 'FichaDataBase.dart';
 import 'PdfService.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Importe Firebase Auth
 
 
 class CreateFicha extends StatefulWidget {
@@ -46,6 +47,18 @@ class _CreateFichaState extends State<CreateFicha> {
   }
 
 Future<void> _gerarPdfESalvar() async {
+  // Obter o ID do usuário logado
+  final currentUser = FirebaseAuth.instance.currentUser;
+  final String? currentUserId = currentUser?.uid;
+
+  // Se não houver usuário logado, você pode exibir uma mensagem ou impedir a criação
+  if (currentUserId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Por favor, faça login para criar uma ficha.')),
+    );
+    return;
+  }
+
   final novaFicha = Ficha(
     nome: _nomeController.text,
     classe: _classeController.text,
@@ -63,6 +76,7 @@ Future<void> _gerarPdfESalvar() async {
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
         .toList(),
+    userId: currentUserId, // Atribui o ID do usuário logado à ficha
   );
 
   final fichaCriada = await FichaDatabase.instance.create(novaFicha);

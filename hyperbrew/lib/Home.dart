@@ -165,7 +165,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _carregarFichas(); // Carrega as fichas ao iniciar a tela
+    // Chame _carregarFichas sempre que a autenticação mudar
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) {
+        _carregarFichas(); // Recarrega as fichas se o usuário logar/deslogar
+      } else {
+        setState(() {
+          _fichas = []; // Limpa as fichas se não houver usuário logado
+        });
+      }
+    });
 
     // Inicializa o AnimationController para a animação do entalhe
     _controller = AnimationController(
@@ -205,12 +214,22 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   // Carrega as fichas do banco de dados local
   Future<void> _carregarFichas() async {
-    print('Carregando fichas...');
-    final fichas = await FichaDatabase.instance.readAllFichas();
-    print('Fichas carregadas: ${fichas.length}');
-    setState(() {
-      _fichas = fichas; // Atualiza a lista de fichas no estado
-    });
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final String? userId = currentUser?.uid;
+
+    if (userId != null) {
+      print('Carregando fichas para o usuário: $userId');
+      final fichas = await FichaDatabase.instance.readAllFichas(userId);
+      print('Fichas carregadas: ${fichas.length}');
+      setState(() {
+        _fichas = fichas; // Atualiza a lista de fichas no estado
+      });
+    } else {
+      print('Nenhum usuário logado. Não carregando fichas.');
+      setState(() {
+        _fichas = []; // Limpa as fichas se não houver usuário logado
+      });
+    }
   }
 
   // Atualiza uma ficha existente no banco de dados
@@ -338,7 +357,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 context,
                 MaterialPageRoute(
                   builder: (context) => PlayerProfile(
-                    jogadorId: userId ?? "", // Passa o UID ou "guest" se não logado
+                    jogadorId: userId ?? "guest", // Passa o UID ou "guest" se não logado
                     jogadorNome: userName ?? "Convidado", // Passa o nome ou "Convidado"
                   ),
                 ),
@@ -506,7 +525,37 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   // Constrói a visualização das fichas (lista de Cards)
   Widget _buildFichasView() {
     return _fichas.isEmpty
-        ? const Center(child: Text("Nenhuma ficha criada ainda.", style: TextStyle(color: Colors.black54)))
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  FirebaseAuth.instance.currentUser == null
+                      ? "Faça login para gerenciar suas fichas."
+                      : "Nenhuma ficha criada ainda.",
+                  style: const TextStyle(color: Colors.black54),
+                  textAlign: TextAlign.center,
+                ),
+                if (FirebaseAuth.instance.currentUser == null) // Adicionar um botão para login se não estiver logado
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                        ).then((_) => _carregarFichas()); // Recarrega as fichas após voltar da LoginPage
+                      },
+                      child: const Text("Fazer Login"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2A2A31),
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          )
         : ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _fichas.length,
@@ -557,4 +606,3 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 }
-

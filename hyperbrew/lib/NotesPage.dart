@@ -1,31 +1,100 @@
-import 'package:flutter/material.dart';
-import 'FichaDataBase.dart';  // importe sua classe do banco
-import 'FichaModel.dart';     // modelo da ficha
-import 'NotesFichaPage.dart';
+// lib/CreateFicha.dart
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'FichaModel.dart';
+import 'FichaDataBase.dart';
+import 'PdfService.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Importe Firebase Auth
 
-class NotesPage extends StatefulWidget {
-  const NotesPage({super.key});
+
+class CreateFicha extends StatefulWidget {
+  const CreateFicha({super.key});
 
   @override
-  State<NotesPage> createState() => _NotesPageState();
+  State<CreateFicha> createState() => _CreateFichaState();
 }
 
-class _NotesPageState extends State<NotesPage> {
-  List<Ficha> _fichas = [];
+class _CreateFichaState extends State<CreateFicha> {
+  final _nomeController = TextEditingController();
+  final _classeController = TextEditingController();
+  final _racaController = TextEditingController();
+  final _descricaoController = TextEditingController();
+  final _forcaController = TextEditingController();
+  final _destrezaController = TextEditingController();
+  final _constituicaoController = TextEditingController();
+  final _inteligenciaController = TextEditingController();
+  final _sabedoriaController = TextEditingController();
+  final _carismaController = TextEditingController();
+  final _equipamentosController = TextEditingController(); 
 
-  @override
-  void initState() {
-    super.initState();
-    _carregarFichas();
+
+  Future<void> _salvarFichaLocal() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> fichas = prefs.getStringList('fichas') ?? [];
+
+    Map<String, String> novaFicha = {
+      'nome': _nomeController.text,
+      'classe': _classeController.text,
+      'raca': _racaController.text,
+    };
+
+    fichas.add(jsonEncode(novaFicha));
+    await prefs.setStringList('fichas', fichas);
   }
 
-  Future<void> _carregarFichas() async {
-    final fichas = await FichaDatabase.instance.readAllFichas();
-    setState(() {
-      _fichas = fichas;
-    });
+Future<void> _gerarPdfESalvar() async {
+  // Obter o ID do usuário logado
+  final currentUser = FirebaseAuth.instance.currentUser;
+  final String? currentUserId = currentUser?.uid;
+
+  // Se não houver usuário logado, você pode exibir uma mensagem ou impedir a criação
+  if (currentUserId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Por favor, faça login para criar uma ficha.')),
+    );
+    return;
   }
+
+  final novaFicha = Ficha(
+    nome: _nomeController.text,
+    classe: _classeController.text,
+    raca: _racaController.text,
+    imagemPath: '',
+    descricao: _descricaoController.text,
+    forca: int.tryParse(_forcaController.text) ?? 0,
+    destreza: int.tryParse(_destrezaController.text) ?? 0,
+    constituicao: int.tryParse(_constituicaoController.text) ?? 0,
+    inteligencia: int.tryParse(_inteligenciaController.text) ?? 0,
+    sabedoria: int.tryParse(_sabedoriaController.text) ?? 0,
+    carisma: int.tryParse(_carismaController.text) ?? 0,
+    equipamentos: _equipamentosController.text
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList(),
+    userId: currentUserId, // Atribui o ID do usuário logado à ficha
+  );
+
+  final fichaCriada = await FichaDatabase.instance.create(novaFicha);
+
+  final pdfFile = await PdfService.gerarPdfFicha(fichaCriada);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        'Ficha salva em DB (id=${fichaCriada.id}) e PDF em ${pdfFile.path}',
+      ),
+    ),
+  );
+
+  Navigator.pop(context);
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -35,86 +104,71 @@ class _NotesPageState extends State<NotesPage> {
         backgroundColor: const Color(0xFF2A2A31),
         iconTheme: const IconThemeData(color: Color(0xFFEAF8FF)),
         title: const Text(
-          "Notas de Sessão",
+          "Criar Ficha",
           style: TextStyle(
             color: Color(0xFFFF3A3A),
             fontWeight: FontWeight.bold,
           ),
         ),
         bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(3.0),
+          preferredSize: Size.fromHeight(3),
           child: Divider(
             color: Color(0xFFFF3A3A),
-            thickness: 5,
+            thickness: 3,
             height: 3,
           ),
         ),
       ),
-      body: _fichas.isEmpty
-          ? const Center(
-              child: Text(
-                "Nenhuma ficha criada ainda.",
-                style: TextStyle(color: Color(0xFF2A2A31)),
-              ),
-            )
-          : ListView.builder(
-              itemCount: _fichas.length,
-              padding: const EdgeInsets.all(16),
-              itemBuilder: (context, i) {
-                final ficha = _fichas[i];
-                return Card(
-                  color: const Color(0xFF2A2A31),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: (ficha.imagemPath != null && ficha.imagemPath!.isNotEmpty)
-                          ? FileImage(File(ficha.imagemPath!))
-                          : const AssetImage('images/avatar.jpg') as ImageProvider,
-                    ),
-                    title: Text(
-                      ficha.nome,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      "${ficha.classe} - ${ficha.raca}",
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white70),
-                 onTap: () {
-                    if (ficha.id == null) {
-                      // Aqui você pode mostrar um alerta para o usuário informando que a ficha não está salva ainda
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: const Text('Erro'),
-                          content: const Text('Esta ficha ainda não foi salva e não tem ID válido.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else {
-                      // Se o id não for nulo, navegue normalmente passando os dados
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => NotesFichaPage(
-                            fichaId: ficha.id!,
-                            fichaNome: ficha.nome,
-                          ),
-                        ),
-                      ).then((_) => _carregarFichas());
-                    }
-                  },
+     body: SingleChildScrollView(
+  child: Padding(
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      children: [
+        _buildCampo("Nome do personagem", _nomeController),
+        _buildCampo("Classe", _classeController),
+        _buildCampo("Raça", _racaController),
+        _buildCampo("Descrição", _descricaoController),
+        _buildCampo("Força", _forcaController),
+        _buildCampo("Destreza", _destrezaController),
+        _buildCampo("Constituição", _constituicaoController),
+        _buildCampo("Inteligência", _inteligenciaController),
+        _buildCampo("Sabedoria", _sabedoriaController),
+        _buildCampo("Carisma", _carismaController),
+        _buildCampo("Equipamentos (separados por vírgula)", _equipamentosController),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: _gerarPdfESalvar,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF6F7684),
+            foregroundColor: Colors.white,
+          ),
+          child: const Text("Salvar PDF e Ficha"),
+        ),
+      ],
+    ),
+  ),
+),
 
+    );
+  }
 
-                  ),
-                );
-              },
-            ),
+  Widget _buildCampo(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: Color(0xFF2A2A31)),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Color(0xFF2A2A31)),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF2A2A31)),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF2A2A31), width: 2),
+          ),
+        ),
+      ),
     );
   }
 }
