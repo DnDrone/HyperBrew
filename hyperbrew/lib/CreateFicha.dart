@@ -9,6 +9,7 @@ import 'FichaModel.dart';
 import 'FichaDataBase.dart';
 import 'PdfService.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importe Firebase Auth
+import 'package:permission_handler/permission_handler.dart'; // Importe permission_handler
 
 
 class CreateFicha extends StatefulWidget {
@@ -32,38 +33,56 @@ class _CreateFichaState extends State<CreateFicha> {
   final _equipamentosController = TextEditingController(); 
 
 
-  Future<void> _salvarFichaLocal() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> fichas = prefs.getStringList('fichas') ?? [];
+  // O método _salvarFichaLocal não é mais necessário, pois estamos salvando no SQLite e gerando PDF
+  // Future<void> _salvarFichaLocal() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   List<String> fichas = prefs.getStringList('fichas') ?? [];
 
-    Map<String, String> novaFicha = {
-      'nome': _nomeController.text,
-      'classe': _classeController.text,
-      'raca': _racaController.text,
-    };
+  //   Map<String, String> novaFicha = {
+  //     'nome': _nomeController.text,
+  //     'classe': _classeController.text,
+  //     'raca': _racaController.text,
+  //   };
 
-    fichas.add(jsonEncode(novaFicha));
-    await prefs.setStringList('fichas', fichas);
-  }
+  //   fichas.add(jsonEncode(novaFicha));
+  //   await prefs.setStringList('fichas', fichas);
+  // }
 
 Future<void> _gerarPdfESalvar() async {
   // Obter o ID do usuário logado
   final currentUser = FirebaseAuth.instance.currentUser;
   final String? currentUserId = currentUser?.uid;
 
-  // Se não houver usuário logado, você pode exibir uma mensagem ou impedir a criação
+  // Se não houver usuário logado, exiba uma mensagem e retorne
   if (currentUserId == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Por favor, faça login para criar uma ficha.')),
+      const SnackBar(content: Text('Por favor, faça login para criar e salvar uma ficha.')),
     );
     return;
   }
+
+  // --- Começa a lógica de solicitação de permissão de armazenamento ---
+  // Esta lógica é aplicada para Android e iOS, embora o iOS geralmente gerencie
+  // permissões de diretório de documentos do app automaticamente.
+  if (Theme.of(context).platform == TargetPlatform.android || Theme.of(context).platform == TargetPlatform.iOS) {
+    var status = await Permission.storage.status; // Verifica o status atual da permissão de armazenamento
+    if (!status.isGranted) { // Se a permissão não foi concedida
+      status = await Permission.storage.request(); // Solicita a permissão ao usuário
+      if (!status.isGranted) { // Se a permissão ainda não foi concedida após a solicitação
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permissão de armazenamento negada. Não foi possível salvar o PDF.')),
+        );
+        return; // Retorna, impedindo o salvamento do PDF
+      }
+    }
+  }
+  // --- Termina a lógica de solicitação de permissão ---
 
   final novaFicha = Ficha(
     nome: _nomeController.text,
     classe: _classeController.text,
     raca: _racaController.text,
-    imagemPath: '',
+    imagemPath: '', // Mantenha vazio se a imagem não for selecionada aqui (ou adicione lógica para seleção de imagem)
     descricao: _descricaoController.text,
     forca: int.tryParse(_forcaController.text) ?? 0,
     destreza: int.tryParse(_destrezaController.text) ?? 0,
@@ -79,10 +98,13 @@ Future<void> _gerarPdfESalvar() async {
     userId: currentUserId, // Atribui o ID do usuário logado à ficha
   );
 
+  // Salvar a ficha no banco de dados SQLite
   final fichaCriada = await FichaDatabase.instance.create(novaFicha);
 
+  // Gerar e salvar o PDF usando o PdfService
   final pdfFile = await PdfService.gerarPdfFicha(fichaCriada);
 
+  // Exibir uma mensagem de sucesso para o usuário
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
@@ -91,9 +113,8 @@ Future<void> _gerarPdfESalvar() async {
     ),
   );
 
-  Navigator.pop(context);
+  Navigator.pop(context); // Volta para a tela anterior após salvar
 }
-
 
 
   @override
@@ -119,11 +140,12 @@ Future<void> _gerarPdfESalvar() async {
           ),
         ),
       ),
-     body: SingleChildScrollView(
+     body: SingleChildScrollView( // Permite rolagem se o conteúdo for muito grande
   child: Padding(
     padding: const EdgeInsets.all(20),
     child: Column(
       children: [
+        // Campos de texto para as propriedades da ficha
         _buildCampo("Nome do personagem", _nomeController),
         _buildCampo("Classe", _classeController),
         _buildCampo("Raça", _racaController),
@@ -135,9 +157,10 @@ Future<void> _gerarPdfESalvar() async {
         _buildCampo("Sabedoria", _sabedoriaController),
         _buildCampo("Carisma", _carismaController),
         _buildCampo("Equipamentos (separados por vírgula)", _equipamentosController),
-        const SizedBox(height: 20),
+        const SizedBox(height: 20), // Espaçamento
+        // Botão para salvar a ficha e gerar o PDF
         ElevatedButton(
-          onPressed: _gerarPdfESalvar,
+          onPressed: _gerarPdfESalvar, // Chama o método para gerar PDF e salvar
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF6F7684),
             foregroundColor: Colors.white,
@@ -152,19 +175,20 @@ Future<void> _gerarPdfESalvar() async {
     );
   }
 
+  // Widget auxiliar para construir campos de texto
   Widget _buildCampo(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextField(
         controller: controller,
-        style: const TextStyle(color: Color(0xFF2A2A31)),
+        style: const TextStyle(color: Color(0xFF2A2A31)), // Estilo do texto de entrada
         decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: Color(0xFF2A2A31)),
-          enabledBorder: const OutlineInputBorder(
+          labelText: label, // Rótulo do campo
+          labelStyle: const TextStyle(color: Color(0xFF2A2A31)), // Estilo do rótulo
+          enabledBorder: const OutlineInputBorder( // Borda quando o campo não está focado
             borderSide: BorderSide(color: Color(0xFF2A2A31)),
           ),
-          focusedBorder: const OutlineInputBorder(
+          focusedBorder: const OutlineInputBorder( // Borda quando o campo está focado
             borderSide: BorderSide(color: Color(0xFF2A2A31), width: 2),
           ),
         ),
