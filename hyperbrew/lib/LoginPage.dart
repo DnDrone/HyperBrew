@@ -77,8 +77,8 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('images/avatar.jpg', height: 120), // Ou o logo do seu app
-              const SizedBox(height: 30),
+              Image.asset('assets/images/profile.png', height: 200), // Ou o logo do seu app
+              const SizedBox(height: 5),
               const Text(
                 "Bem-vindo ao Hyperbrew!",
                 style: TextStyle(
@@ -98,10 +98,8 @@ class _LoginPageState extends State<LoginPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
-              ElevatedButton.icon(
+              ElevatedButton(
                 onPressed: _handleSignIn,
-                icon: Image.asset('images/google_logo.png', height: 24), // Você precisará de um asset com o logo do Google
-                label: const Text("Entrar com Google"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6F7684),
                   foregroundColor: Colors.white,
@@ -109,6 +107,14 @@ class _LoginPageState extends State<LoginPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min, // To keep content centered
+                  children: <Widget>[
+                    const Text("Sign in with"),
+                    const SizedBox(width: 8), // Add some spacing between text and icon
+                    Image.asset('assets/images/google_logo_white.png', height: 30),
+                  ],
                 ),
               ),
             ],
