@@ -6,8 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'DetalhesFicha.dart';
+import 'LoginPage.dart';
 import 'PlayerProfile.dart';
-import 'NotesPage.dart';
+import 'NotesPage.dart' hide CreateFicha;
 import 'SecaoPage.dart';
 import 'SettingsPage.dart';
 import 'DiceRoller.dart';
@@ -89,12 +90,6 @@ class NotchedBackgroundPainter extends CustomPainter {
       ..lineTo(size.width, size.height + 50) // Linha para o inferior direito
       ..lineTo(size.width, size.height - 10 ) // Linha para o topo direito
       ..lineTo(size.width / 2 + 40 + notchOffset.dx, size.height - 10 ) // Começa o entalhe
-      ..quadraticBezierTo(
-        size.width / 2 + notchOffset.dx, // Ponto de controle X
-        size.height + 30 + notchOffset.dy, // Ponto de controle Y (move o entalhe para baixo)
-        size.width / 2 - 40 + notchOffset.dx, // Ponto final do entalhe
-        size.height -10,
-      )
       ..lineTo(0, size.height - 10 ) // Linha de volta para o topo esquerdo
       ..close(); // Fecha o caminho
 
@@ -424,14 +419,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           _pages[_selectedIndex], // Exibe a página selecionada
           Positioned.fill(
             bottom: 0,
-            top: 600, // Ajuste este valor se o entalhe não estiver aparecendo corretamente
+            top: 0, // Ajuste este valor se o entalhe não estiver aparecendo corretamente
             child: CustomPaint(
               painter: NotchedBackgroundPainter(_notchOffset), // Desenha o fundo entalhado
             ),
           ),
           _selectedIndex == 2 ? // Botão de Adicionar Ficha apenas na tela de Fichas
           Positioned(
-            top: 520, // Posição vertical do botão
+            bottom: 30, // Posição vertical do botão
             left: 240, // Posição horizontal do botão
             width: 100, // Largura
             height: 50, // Altura
@@ -499,25 +494,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       floatingActionButton: Container(
           width: 70,
           height: 70,
-          child: FittedBox( child:  FloatingActionButton(
-            backgroundColor: const Color(0xFF6F7684),
-            foregroundColor: const Color(0xFFEAF8FF),
-            shape: const CircleBorder(),
-            onPressed: () async {
-              if(_selectedIndex == 2){ // Se estiver na aba de Fichas
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SecaoPage()), // Navega para a tela de Seção
-                );
-              }
-            },
-            child:CustomPaint(
-              size: const Size(100, 100),
-              painter: HexagonPainter(), // Desenha o hexágono
-              child: Icon(_icon[_selectedIndex], color: const Color(0xFFFF3A3A),), // Ícone da aba selecionada
-            ),
-          )
-          )
       ),
     );
   }
