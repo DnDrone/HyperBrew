@@ -53,7 +53,7 @@ class FichaDatabase {
       sabedoria INTEGER NOT NULL,
       carisma INTEGER NOT NULL,
       equipamentos TEXT NOT NULL,
-      userId TEXT // Adicionado: Campo para o ID do usuário
+      userId TEXT NOT NULL
     )
     ''');
 

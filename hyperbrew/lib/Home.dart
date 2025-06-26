@@ -417,17 +417,20 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       body: Stack( // Usa Stack para sobrepor a navegação inferior
         children: [
           _pages[_selectedIndex], // Exibe a página selecionada
+          /*
           Positioned.fill(
             bottom: 0,
             top: 0, // Ajuste este valor se o entalhe não estiver aparecendo corretamente
+
             child: CustomPaint(
               painter: NotchedBackgroundPainter(_notchOffset), // Desenha o fundo entalhado
             ),
           ),
+           */
           _selectedIndex == 2 ? // Botão de Adicionar Ficha apenas na tela de Fichas
           Positioned(
-            bottom: 30, // Posição vertical do botão
-            left: 240, // Posição horizontal do botão
+            bottom: 20, // Posição vertical do botão
+            left: MediaQuery.of(context).size.width * 0.5 - 50,
             width: 100, // Largura
             height: 50, // Altura
             child: ElevatedButton(
@@ -569,11 +572,34 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       builder: (_) => DetalhesFicha(ficha: Ficha.fromMap(ficha.toMap())), // Visualiza detalhes
                     ),
                   );
+                } else if (value == 'excluir') {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text("Excluir Ficha"),
+                      content: const Text("Você tem certeza que deseja excluir esta ficha?"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context), // Fecha o diálogo
+                          child: const Text("Cancelar"),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            await FichaDatabase.instance.delete(ficha.id!); // Exclui a ficha do banco de dados
+                            await _carregarFichas(); // Recarrega as fichas
+                            Navigator.pop(context); // Fecha o diálogo
+                          },
+                          child: const Text("Excluir"),
+                        ),
+                      ],
+                    ),
+                  );
                 }
               },
               itemBuilder: (context) => [
                 const PopupMenuItem(value: 'ver', child: Text("Visualizar")),
                 const PopupMenuItem(value: 'editar', child: Text("Editar")),
+                const PopupMenuItem(value: 'excluir', child: Text("Excluir")),
               ],
             ),
           ),

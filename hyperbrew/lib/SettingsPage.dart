@@ -19,7 +19,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool modoEscuro = false; // Estado para o modo escuro
 
   // Função para confirmar ações com um AlertDialog
   void _confirmarAcao(String titulo, String mensagem, VoidCallback onConfirmar) {
@@ -167,20 +166,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     "ID: ${displayUserId}",
                     style: TextStyle(fontSize: 14, color: Color(0xFF6F7684)),
                   ),
-                SizedBox(height: 16),
-                Divider(color: Color(0xFF6F7684)), // Divisor
               ],
             ),
           ),
           // Opção de Modo Escuro
-          SwitchListTile(
-            value: modoEscuro,
-            onChanged: (value) {
-              setState(() => modoEscuro = value);
-            },
-            title: Text("dark_mode".tr(), style: const TextStyle(color: Color(0xFF2A2A31))),
-            activeColor: const Color(0xFF6F7684),
-          ),
           const Divider(color: Color(0xFF6F7684)),
           // Opções de Limpeza de Dados
           ListTile(
