@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayerProfile extends StatefulWidget {
-  final int jogadorId;
+  final String jogadorId;
   final String jogadorNome;
 
   const PlayerProfile({

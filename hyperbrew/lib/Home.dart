@@ -338,7 +338,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 context,
                 MaterialPageRoute(
                   builder: (context) => PlayerProfile(
-                    jogadorId: userId ?? "guest", // Passa o UID ou "guest" se não logado
+                    jogadorId: userId ?? "", // Passa o UID ou "guest" se não logado
                     jogadorNome: userName ?? "Convidado", // Passa o nome ou "Convidado"
                   ),
                 ),

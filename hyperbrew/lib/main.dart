@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Remove a faixa de "Debug"
       locale: context.locale, // Define o locale atual do aplicativo
       supportedLocales: context.supportedLocales, // Define os locales suportados
-      localizationsDelegates: context.localizationsDelegates, // Delega a localização para EasyLocalization
+      localizationsDelegates: EasyLocalization.of(context)!.delegates, // Delega a localização para EasyLocalization
       // O aplicativo sempre começará na Home.
       // A lógica de login/logout será gerenciada dentro da Home ou SettingsPage,
       // acessando o estado de autenticação do Firebase.
