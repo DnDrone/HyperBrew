@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'Home.dart';
+import 'Home.dart'; // A Home é para onde o usuário será redirecionado após o login
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,6 +14,7 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance; // Instância do Firebase Auth
   final GoogleSignIn _googleSignIn = GoogleSignIn(); // Instância do Google SignIn
 
+  // Função para realizar o login com o Google
   Future<UserCredential?> _signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn(); // Inicia o processo de login com Google
@@ -28,10 +29,13 @@ class _LoginPageState extends State<LoginPage> {
         idToken: googleAuth.idToken,
       );
 
-      UserCredential userCredential = await _auth.signInWithCredential(credential); // Faz o login com as credenciais do Google
+      // Faz o login com as credenciais do Google no Firebase Auth
+      UserCredential userCredential = await _auth.signInWithCredential(credential);
       return userCredential;
     } catch (e) {
+      // Captura e imprime erros durante o Google Sign-In
       print("Erro durante o Google Sign-In: $e");
+      // Exibe uma SnackBar com a mensagem de erro para o usuário
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Falha ao entrar com o Google: $e')),
       );
@@ -39,10 +43,13 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // Lida com o processo de login
   void _handleSignIn() async {
     UserCredential? userCredential = await _signInWithGoogle();
     if (userCredential != null) {
-      // Navega para a página Home após login bem-sucedido
+      // Navega de volta para a Home após login bem-sucedido.
+      // pushReplacement remove a LoginPage da pilha de navegação,
+      // então o botão Voltar não retornará a ela.
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const Home()),
       );
@@ -52,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF8FF),
+      backgroundColor: const Color(0xFFEAF8FF), // Cor de fundo do Scaffold
       appBar: AppBar(
         title: const Text(
           "Login",
@@ -61,8 +68,8 @@ class _LoginPageState extends State<LoginPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: const Color(0xFF2A2A31),
-        bottom: const PreferredSize(
+        backgroundColor: const Color(0xFF2A2A31), // Cor de fundo da AppBar
+        bottom: const PreferredSize( // Linha divisória na parte inferior da AppBar
           preferredSize: Size.fromHeight(3.0),
           child: Divider(
             color: Color(0xFFFF3A3A),
@@ -77,8 +84,10 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('images/avatar.jpg', height: 120), // Ou o logo do seu app
-              const SizedBox(height: 30),
+              // Imagem ou logo do aplicativo
+              Image.asset('assets/images/profile.png', height: 200), // Certifique-se de que o caminho e o arquivo existem
+              const SizedBox(height: 5),
+              // Mensagem de boas-vindas
               const Text(
                 "Bem-vindo ao Hyperbrew!",
                 style: TextStyle(
@@ -89,6 +98,7 @@ class _LoginPageState extends State<LoginPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
+              // Descrição
               const Text(
                 "Faça login para gerenciar suas fichas de personagem e sessões.",
                 style: TextStyle(
@@ -98,17 +108,24 @@ class _LoginPageState extends State<LoginPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
-              ElevatedButton.icon(
-                onPressed: _handleSignIn,
-                icon: Image.asset('images/google_logo.png', height: 24), // Você precisará de um asset com o logo do Google
-                label: const Text("Entrar com Google"),
+              // Botão de login com Google
+              ElevatedButton(
+                onPressed: _handleSignIn, // Chama a função de login
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6F7684),
                   foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 50),
+                  minimumSize: const Size(double.infinity, 50), // Botão de largura total
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10), // Borda arredondada
                   ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min, // Mantém o conteúdo centralizado
+                  children: <Widget>[
+                    const Text("Sign in with"),
+                    const SizedBox(width: 8), // Espaçamento entre texto e ícone
+                    Image.asset('assets/images/google_logo_white.png', height: 30), // Ícone do Google
+                  ],
                 ),
               ),
             ],
@@ -118,3 +135,4 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
