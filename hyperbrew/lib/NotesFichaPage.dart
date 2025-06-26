@@ -1,13 +1,13 @@
-// lib/NotesFichaPage.dart
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'FichaDataBase.dart'; // Importe seu arquivo do banco
+import 'FichaModel.dart';
 
 class NotesFichaPage extends StatefulWidget {
-  final Map<String, dynamic> ficha;
-  final int index;
+  final int fichaId;
+  final String fichaNome;
 
-  const NotesFichaPage({super.key, required this.ficha, required this.index});
+  const NotesFichaPage(
+      {super.key, required this.fichaId, required this.fichaNome});
 
   @override
   State<NotesFichaPage> createState() => _NotesFichaPageState();
@@ -22,20 +22,59 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
     _carregarNotas();
   }
 
-  void _carregarNotas() {
-    final lista = widget.ficha["notas"] as List<dynamic>? ?? [];
-    _notas = lista.cast<Map<String, dynamic>>();
+  Future<void> _carregarNotas() async {
+    final notas = await FichaDatabase.instance.readNotas(widget.fichaId);
+    setState(() {
+      _notas = List<Map<String, dynamic>>.from(notas);
+    });
   }
 
-  Future<void> _salvarNotas() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> fichasJson = prefs.getStringList('fichas') ?? [];
+  Future<void> _salvarNota({Map<String, dynamic>? nota, int? index}) async {
+    final titulo = nota?['titulo'] ?? '';
+    final descricao = nota?['descricao'] ?? '';
+    final data = DateTime.now().toIso8601String();
 
-    final fichas = fichasJson.map((e) => jsonDecode(e) as Map<String, dynamic>).toList();
-    fichas[widget.index]["notas"] = _notas;
+    if (index != null) {
+      // Update
+      final notaAtual = _notas[index];
+      final id = notaAtual['id'] as int;
+      await FichaDatabase.instance.updateNota(id, {
+        'titulo': titulo,
+        'descricao': descricao,
+        'data': data,
+      });
+      _notas[index] = {
+        'id': id,
+        'fichaId': widget.fichaId,
+        'titulo': titulo,
+        'descricao': descricao,
+        'data': data,
+      };
+    } else {
+      // Create
+      final id = await FichaDatabase.instance.createNota(widget.fichaId, {
+        'titulo': titulo,
+        'descricao': descricao,
+        'data': data,
+      });
+      _notas.insert(0, {
+        'id': id,
+        'fichaId': widget.fichaId,
+        'titulo': titulo,
+        'descricao': descricao,
+        'data': data,
+      });
+    }
 
-    final novaLista = fichas.map((e) => jsonEncode(e)).toList();
-    await prefs.setStringList('fichas', novaLista);
+    setState(() {});
+  }
+
+  Future<void> _excluirNota(int index) async {
+    final id = _notas[index]['id'] as int;
+    await FichaDatabase.instance.deleteNota(id);
+    setState(() {
+      _notas.removeAt(index);
+    });
   }
 
   void _abrirEditor({Map<String, dynamic>? nota, int? index}) {
@@ -50,32 +89,31 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 40),
+        padding: EdgeInsets.fromLTRB(
+            20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Nova Nota", style: TextStyle(color: Colors.white, fontSize: 20)),
+            Text(
+              index == null ? "Nova Nota" : "Editar Nota",
+              style: const TextStyle(color: Colors.white, fontSize: 20),
+            ),
             const SizedBox(height: 20),
             _input("Título", tituloCtrl),
             _input("Descrição", descCtrl, maxLines: 4),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                final novaNota = {
-                  "titulo": tituloCtrl.text,
-                  "descricao": descCtrl.text,
-                  "data": DateTime.now().toIso8601String(),
-                };
+                if (tituloCtrl.text.trim().isEmpty)
+                  return; // título obrigatório
 
-                setState(() {
-                  if (index != null) {
-                    _notas[index] = novaNota;
-                  } else {
-                    _notas.insert(0, novaNota);
-                  }
-                });
-
-                await _salvarNotas();
+                await _salvarNota(
+                  nota: {
+                    'titulo': tituloCtrl.text.trim(),
+                    'descricao': descCtrl.text.trim(),
+                  },
+                  index: index,
+                );
                 Navigator.pop(context);
               },
               child: const Text("Salvar"),
@@ -90,7 +128,8 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
     );
   }
 
-  Widget _input(String label, TextEditingController controller, {int maxLines = 1}) {
+  Widget _input(String label, TextEditingController controller,
+      {int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
@@ -124,7 +163,7 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
         backgroundColor: const Color(0xFF2A2A31),
         iconTheme: const IconThemeData(color: Color(0xFFEAF8FF)),
         title: Text(
-          "Notas: ${widget.ficha["nome"]}",
+          "Notas: ${widget.fichaNome}",
           style: const TextStyle(
             color: Color(0xFFFF3A3A),
             fontWeight: FontWeight.bold,
@@ -146,7 +185,9 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
         ],
       ),
       body: _notas.isEmpty
-          ? const Center(child: Text("Sem notas ainda.", style: TextStyle(color: Color(0xFF2A2A31))))
+          ? const Center(
+              child: Text("Sem notas ainda.",
+                  style: TextStyle(color: Color(0xFF2A2A31))))
           : ListView.builder(
               itemCount: _notas.length,
               padding: const EdgeInsets.all(16),
@@ -156,13 +197,18 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
                   color: const Color(0xFF2A2A31),
                   margin: const EdgeInsets.only(bottom: 16),
                   child: ListTile(
-                    title: Text(nota["titulo"], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    title: Text(nota["titulo"],
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(nota["descricao"], style: const TextStyle(color: Colors.white70)),
+                        Text(nota["descricao"] ?? '',
+                            style: const TextStyle(color: Colors.white70)),
                         const SizedBox(height: 4),
-                        Text(_formatarData(nota["data"]), style: const TextStyle(color: Colors.white30, fontSize: 12)),
+                        Text(_formatarData(nota["data"]),
+                            style: const TextStyle(
+                                color: Colors.white30, fontSize: 12)),
                       ],
                     ),
                     trailing: PopupMenuButton<String>(
@@ -170,14 +216,15 @@ class _NotesFichaPageState extends State<NotesFichaPage> {
                         if (value == 'editar') {
                           _abrirEditor(nota: nota, index: i);
                         } else if (value == 'excluir') {
-                          setState(() => _notas.removeAt(i));
-                          await _salvarNotas();
+                          await _excluirNota(i);
                         }
                       },
                       icon: const Icon(Icons.more_vert, color: Colors.white),
                       itemBuilder: (context) => [
-                        const PopupMenuItem(value: 'editar', child: Text("Editar")),
-                        const PopupMenuItem(value: 'excluir', child: Text("Excluir")),
+                        const PopupMenuItem(
+                            value: 'editar', child: Text("Editar")),
+                        const PopupMenuItem(
+                            value: 'excluir', child: Text("Excluir")),
                       ],
                     ),
                   ),
